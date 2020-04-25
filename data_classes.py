@@ -6,6 +6,13 @@
     Датаклассы:
 
     @dataclass
+    class ValidatedDC(TypingValidation):
+        Датакласс с самыми полными возможностями валидации.
+        Расширяет базовые классы методом get_nested_validated_dc(cls),
+        который позволяет получать все вложенные датаклассы-потомки
+        ValidatedDC, которые используются в аннотациях полей.
+
+    @dataclass
     class TypingValidation(DictReplaceableValidation):
         Добавляет для использования в аннотациях некоторые алиасы из модуля
         typing, на данный момент это: List, Union, Optional, Any и Literal.
@@ -24,6 +31,7 @@
         Для аннотаций полей можно использовать стандартные типы Python и
         классы созданные пользователем.
 """
+import copy
 from dataclasses import Field as DataclassesField
 from dataclasses import dataclass
 from dataclasses import fields as dataclasses_fields
@@ -336,22 +344,65 @@ class TypingValidation(DictReplaceableValidation):
 # ----------------------------------------------------------------------------
 
 
+@dataclass
+class ValidatedDC(TypingValidation):
+
+    @classmethod
+    def get_nested_validated_dc(cls) -> set:
+        """
+            Отдает все, используемые полями, датаклассы ValidatedDC
+        """
+
+        def get_field_validated_dc(annotation, set_validated_dc=None) -> set:
+            """
+                Возвращает все ValidatedDC классы которые используются в
+                аннотации у поля.
+            """
+            if set_validated_dc is None:
+                set_validated_dc = set()
+
+            if cls._is_typing_alias(str(annotation)):
+                if hasattr(annotation, '__args__'):
+                    for item in annotation.__args__:
+                        get_field_validated_dc(item, set_validated_dc)
+            elif type(annotation) == type and \
+                    issubclass(annotation, ValidatedDC):
+
+                set_validated_dc.add(annotation)
+
+            return set_validated_dc
+
+        local_validated_dc = set()
+        for field in dataclasses_fields(cls):
+            local_validated_dc.update(get_field_validated_dc(field.type))
+
+        nested_validated_dc = copy.copy(local_validated_dc)
+
+        for validated_dc in local_validated_dc:
+            nested_validated_dc.update(validated_dc.get_nested_validated_dc())
+
+        return nested_validated_dc
+
+
+# ----------------------------------------------------------------------------
+
+
 if __name__ == "__main__":
 
     @dataclass
-    class SimpleInt(TypingValidation):
+    class SimpleInt(ValidatedDC):
         i: int
 
     @dataclass
-    class SimpleStr(TypingValidation):
+    class SimpleStr(ValidatedDC):
         s: str
 
     @dataclass
-    class SimpleDict(TypingValidation):
+    class SimpleDict(ValidatedDC):
         d: dict
 
     @dataclass
-    class SimpleUnion(TypingValidation):
+    class SimpleUnion(ValidatedDC):
         u: List[List[Union[SimpleInt, SimpleStr, SimpleDict]]]
 
     u = SimpleUnion(u=[
@@ -360,4 +411,13 @@ if __name__ == "__main__":
     ])
 
     print(u.get_errors())
+    # None
+
     print(u)
+    # SimpleUnion(u=[[SimpleInt(i=1), SimpleStr(s='1'), SimpleInt(i=2),
+    #             SimpleDict(d={})], [SimpleInt(i=5), SimpleStr(s='6'),
+    #             SimpleInt(i=7), SimpleDict(d={8: 8})]])
+
+    print(SimpleUnion.get_nested_validated_dc())
+    # {<class '__main__.SimpleInt'>, <class '__main__.SimpleStr'>,
+    #  <class '__main__.SimpleDict'>}
