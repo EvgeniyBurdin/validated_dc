@@ -8,7 +8,7 @@
     @dataclass
     class ValidatedDC(TypingValidation):
         Датакласс с самыми полными возможностями валидации.
-        Расширяет базовые классы методом get_nested_validated_dc(cls),
+        Добавляет в базовый класс метод get_nested_validated_dc(cls),
         который позволяет получать все вложенные датаклассы-потомки
         ValidatedDC, которые используются в аннотациях полей.
 
@@ -19,9 +19,13 @@
 
     @dataclass
     class DictReplaceableValidation(BasicValidation):
-        Добавляет возможность замены значения поля с словаря на экземпляр
-        потомка DictReplaceableValidation, если словарь может быть использован
-        для инициализации экземпляра.
+        Добавляет возможность при создании экземпляра использовать словарь,
+        при инициализации значения поля, вместо экземпляра потомка
+        DictReplaceableValidation указанного в аннотации поля.
+        Это может пригодиться, например, при получении json-словаря по апи,
+        для автоматической валидации значений.
+        Так же, при этом, происходит замена словаря на экземпляр датакласса
+        из аннотации (если данные из словаря валидны).
 
     @dataclass
     class BasicValidation:
@@ -84,13 +88,13 @@ class BasicValidation:
 
         return not bool(self._errors)
 
-    def _init_validation(self):
+    def _init_validation(self) -> None:
         """
             Устанавливает свойства используемые при валидации
         """
         self._errors = []
 
-    def _save_error(self, **kwargs):
+    def _save_error(self, **kwargs) -> None:
         """
             Добавляет ошибку в список ошибок у поля.
         """
@@ -144,7 +148,7 @@ class BasicValidation:
 
         return result
 
-    def _run_validation(self):
+    def _run_validation(self) -> None:
         """
             Запускает валидацию полей
         """
@@ -160,11 +164,17 @@ class BasicValidation:
 @dataclass
 class DictReplaceableValidation(BasicValidation):
     """
-        Добавляет возможность замены значения поля с словаря на экземпляр
-        потомка DictReplaceableValidation, если словарь может быть использован
-        для инициализации экземпляра.
+        Добавляет возможность при создании экземпляра использовать словарь,
+        при инициализации значения поля, вместо экземпляра потомка
+        DictReplaceableValidation указанного в аннотации поля.
+
+        Это может пригодиться, например, при получении json-словаря по апи,
+        для автоматической валидации значений.
+
+        Так же, при этом, происходит замена словаря на экземпляр датакласса
+        из аннотации (если данные из словаря валидны).
     """
-    def _is_instance(self, field_value: Any, field_type: type):
+    def _is_instance(self, field_value: Any, field_type: type) -> bool:
 
         if type(field_type) == type and \
            issubclass(field_type, DictReplaceableValidation):
@@ -194,9 +204,9 @@ class DictReplaceableValidation(BasicValidation):
 
         self.new_field_value = getattr(self, field.name)
         result = super()._field_validation(field)
-        if result:
-            # Если валидация поля прошла успешно, то установим новое значение
-            # у поля.
+        if result and self.field_value != self.new_field_value:
+            # Если валидация поля прошла успешно и текущее значение у поля
+            # изменилось, то установим новое значение у поля
             setattr(self, self.field_name, self.new_field_value)
 
         return result
@@ -230,6 +240,7 @@ class TypingValidation(DictReplaceableValidation):
         if self._is_typing_alias(str_field_type):
 
             if self._is_supported_alias(str_field_type):
+
                 is_instance = self._get_alias_method(str_field_type)
                 result = is_instance(field_value, field_type)
 
@@ -302,23 +313,36 @@ class TypingValidation(DictReplaceableValidation):
             Проверяет является ли field_value списком экземпляров field_type.
         """
         if isinstance(field_value, list):
+            # Имеем дело со списком. В родительском классе возможна замена
+            # значения-словаря на значение-экземпляр потомка родительского
+            # класса. То есть, возможно изменение списка значений текущего
+            # поля.
+            # Будем к этому готовы.
             new_field_value = []
 
             # У List допустимый тип стоит первым в кортеже __args__
             field_type = field_type.__args__[0]
+
             for item_value in field_value:
 
                 if self._is_instance(item_value, field_type):
+                    # Собираем новый список для текущего поля
+                    # (так как в нем возможна замена элемента-словаря на
+                    # элемент-экземпляр потомка родительского класса)
                     new_field_value.append(self.new_field_value)
                 else:
                     return False
 
-            # Все элементы списка field_value валидные
+            # Все элементы списка field_value валидные.
+            # Сохраним новый список для поля (если он отличается от текущего
+            # списка у поля, то будет использован для фактической замены
+            # значения поля).
             self.new_field_value = new_field_value
 
             return True
 
         else:
+            # Значение поля - не список, а это ошибка валидации
             self._save_error(field_value=field_value, field_type=field_type)
             return False
 
@@ -328,9 +352,7 @@ class TypingValidation(DictReplaceableValidation):
 
             Проверяет является ли field_value одним из field_type.__args__
         """
-        result = field_value in field_type.__args__
-
-        return result
+        return field_value in field_type.__args__
 
     def _is_any_instance(self, field_value: Any, field_type: type) -> bool:
         """
@@ -346,7 +368,11 @@ class TypingValidation(DictReplaceableValidation):
 
 @dataclass
 class ValidatedDC(TypingValidation):
-
+    """
+        Добавляет в базовый класс метод get_nested_validated_dc(cls),
+        который позволяет получать все вложенные датаклассы-потомки
+        ValidatedDC, которые используются в аннотациях полей.
+    """
     @classmethod
     def get_nested_validated_dc(cls) -> set:
         """
