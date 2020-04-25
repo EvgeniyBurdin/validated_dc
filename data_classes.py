@@ -23,8 +23,6 @@
         запускается валидация данных.
         Для аннотаций полей можно использовать стандартные типы Python и
         классы созданные пользователем.
-
-
 """
 from dataclasses import Field as DataclassesField
 from dataclasses import dataclass
@@ -333,6 +331,9 @@ class TypingValidation(DictReplaceableValidation):
             Просто вернем True
         """
         return True
+
+
+# ----------------------------------------------------------------------------
 
 
 if __name__ == "__main__":
