@@ -2,6 +2,29 @@
     Валидируемые датаклассы.
 
     У полей класса проверяется соответствие значений их аннотациям.
+
+    Датаклассы:
+
+    @dataclass
+    class TypingValidation(DictReplaceableValidation):
+        Добавляет для использования в аннотациях некоторые алиасы из модуля
+        typing, на данный момент это: List, Union, Optional, Any и Literal.
+
+    @dataclass
+    class DictReplaceableValidation(BasicValidation):
+        Добавляет возможность замены значения поля с словаря на экземпляр
+        потомка DictReplaceableValidation, если словарь может быть использован
+        для инициализации экземпляра.
+
+    @dataclass
+    class BasicValidation:
+        Базовый валидируемый датакласс.
+        Работает как обычный датакласс, но после создания экземпляра
+        запускается валидация данных.
+        Для аннотаций полей можно использовать стандартные типы Python и
+        классы созданные пользователем.
+
+
 """
 from dataclasses import Field as DataclassesField
 from dataclasses import dataclass
@@ -131,9 +154,9 @@ class BasicValidation:
 @dataclass
 class DictReplaceableValidation(BasicValidation):
     """
-        Датакласс добавляющий возможность замены словаря на экземпляр потомка
-        DictReplaceableValidation, если словарь может быть использован для
-        инициализации экземпляр.
+        Добавляет возможность замены значения поля с словаря на экземпляр
+        потомка DictReplaceableValidation, если словарь может быть использован
+        для инициализации экземпляра.
     """
     def _is_instance(self, field_value: Any, field_type: type):
 
@@ -189,8 +212,8 @@ STR_ALIASES = {
 @dataclass
 class TypingValidation(DictReplaceableValidation):
     """
-        Добавляет поддержку некоторых алиасов из модуля typing для аннотации
-        полей валидируемого датакласса.
+        Добавляет для использования в аннотациях некоторые алиасы из модуля
+        typing.
 
         Поддерживаемые алиасы перечислены в константе STR_ALIASES.
     """
