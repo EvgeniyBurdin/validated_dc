@@ -329,7 +329,11 @@ class TypingValidation(DictReplaceableValidation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
-                    new_field_value.append(self.new_field_value)
+                    if self.field_value != self.new_field_value:
+                        value = self.new_field_value
+                    else:
+                        value = item_value
+                    new_field_value.append(value)
                 else:
                     return False
 
