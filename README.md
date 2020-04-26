@@ -54,7 +54,7 @@ print(instance.get_errors())
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': '3'}])
 
 instance.bar[2]['foo'] = 3
-print(instance)
+print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': 3}])
 print(instance.is_valid())    # True
 print(instance.get_errors())  # None
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo=3)]
