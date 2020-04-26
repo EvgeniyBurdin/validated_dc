@@ -112,10 +112,7 @@ print(workers.get_errors(), '\n')  # Errors log:
 # 'field_type': <class 'str'>}]}, {'field_name': 'person', 'field_value':
 # {'name': 123, 'age': 30, 'contact': [{'phone': '+7-999-000-00-00'},
 # {'email': 'ivan@mail.ru', 'kind': 'personal'}], 'address': {'city':
-# 'Samara'}}, 'field_type': <class '__main__.Person'>}, {'field_name':
-# 'person', 'field_value': {'name': 123, 'age': 30, 'contact': [{'phone':
-# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
-# 'address': {'city': 'Samara'}}, 'field_type': typing.List[__main__.Person]}]
+# 'Samara'}}, 'field_type': typing.List[__main__.Person]}]
 
 workers.person['name'] = 'Ivan'  # person - is still a dictionary
 print(workers.is_valid(), '\n')
