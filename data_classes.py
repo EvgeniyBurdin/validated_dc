@@ -250,9 +250,6 @@ class TypingValidation(DictReplaceableValidation):
                 is_instance = self._get_alias_method(str_field_type)
                 result = is_instance(field_value, field_type)
 
-                if result:
-                    self.field_errors = []
-
                 return result
 
             else:
