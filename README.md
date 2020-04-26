@@ -11,7 +11,7 @@ Checks the value of its fields by their annotations.
 
 `ValidatedDC` is a regular Python dataclass, but with the ability to check the validity of the data by which this dataclass was initialized. Also, you can check the data at any time during the life of the instance.
 
-See detailed examples in `examoles.py`
+See detailed examples in `examples.py`.
 
 ## Simple example
 
