@@ -92,26 +92,7 @@ class BasicValidation:
         """
             Устанавливает свойства используемые при валидации
         """
-        self._errors = []
-
-    def _save_error(self, **kwargs) -> None:
-        """
-            Добавляет ошибку в список ошибок у поля.
-        """
-        error = {
-            'field_name': self.field_name,
-            'field_value': value_readable_form(self.field_value),
-            'field_type': self.field_type
-        }
-        if self.field_exception is not None:
-            error['field_exception'] = self.field_exception
-
-        # Если в метод передали дополнительные поля для ошибки, или имеющиеся
-        # поля но с другими значениями, то сообщение об ошибке
-        # дополнится/изменится.
-        error.update(kwargs)
-
-        self.field_errors.append(error)
+        self._errors = {}
 
     def _is_instance(self, field_value: Any, field_type: type) -> bool:
         """
@@ -120,12 +101,14 @@ class BasicValidation:
         try:
             result = isinstance(field_value, field_type)
 
-        except Exception as error:
-            self.field_exception = error
+        except Exception as ex:
+            self.field_exception = ex
             result = False
 
         if not result:
-            self._save_error(field_value=field_value, field_type=field_type)
+            self.field_errors.append(
+                (value_readable_form(field_value), field_type)
+            )
 
         return result
 
@@ -143,8 +126,17 @@ class BasicValidation:
 
         if not result:
             # Если проверка поля завершилась неудачно, то добавим список
-            # ошибок поля в список ошибок всего экземпляра.
-            self._errors.extend(self.field_errors)
+            # ошибок поля в ошибки всего экземпляра.
+            errors = {
+                'VALUE': value_readable_form(self.field_value),
+                'TYPE': self.field_type
+            }
+            if self.field_exception is not None:
+                errors['EXCEPTION'] = self.field_exception
+            else:
+                errors['ERRORS'] = self.field_errors
+
+            self._errors[self.field_name] = errors
 
         return result
 
@@ -190,7 +182,6 @@ class DictReplaceableValidation(BasicValidation):
                 try:
                     instance = field_type(**value)
                     errors = instance.get_errors()
-                    self.field_exception = None
 
                 except Exception as ex:
                     self.field_exception = ex
@@ -246,12 +237,13 @@ class TypingValidation(DictReplaceableValidation):
         if self._is_typing_alias(str_field_type):
 
             if self._is_supported_alias(str_field_type):
-
                 is_instance = self._get_alias_method(str_field_type)
                 result = is_instance(field_value, field_type)
-
-                return result
-
+                if result:
+                    return True
+                else:
+                    self.field_errors.append((field_value, field_type))
+                    return False
             else:
                 error = '%s - not supported' % str_field_type
                 raise Exception(error)
@@ -354,7 +346,6 @@ class TypingValidation(DictReplaceableValidation):
 
         else:
             # Значение поля - не список, а это ошибка валидации
-            self._save_error(field_value=field_value, field_type=field_type)
             return False
 
     def _is_literal_instance(self, field_value: Any, field_type: type) -> bool:
