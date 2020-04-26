@@ -117,6 +117,12 @@ print(workers.get_errors(), '\n')  # Errors log:
 # '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
 # 'address': {'city': 'Samara'}}, 'field_type': typing.List[__main__.Person]}]
 
+workers.person['name'] = 'Ivan'  # person - is still a dictionary
+print(workers.is_valid(), '\n')
+# True
+
+print(workers.person.name, '\n')  # person - is now an instance Person
+# Ivan
 
 person = {
     'name': 'Ivan',
