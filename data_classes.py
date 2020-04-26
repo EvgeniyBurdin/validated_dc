@@ -37,7 +37,7 @@
 """
 import copy
 from dataclasses import Field as DataclassesField
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from dataclasses import fields as dataclasses_fields
 from typing import Any, Callable, List, Literal, Optional, Union
 
@@ -179,11 +179,17 @@ class DictReplaceableValidation(BasicValidation):
         if type(field_type) == type and \
            issubclass(field_type, DictReplaceableValidation):
 
-            if isinstance(field_value, dict):
-                try:
-                    instance = field_type(**field_value)
-                    errors = instance.get_errors()
+            if isinstance(field_value, dict) or \
+               isinstance(field_value, field_type):
 
+                if isinstance(field_value, field_type):
+                    value = asdict(field_value)
+                else:
+                    value = field_value
+
+                try:
+                    instance = field_type(**value)
+                    errors = instance.get_errors()
                     self.field_exception = None
 
                 except Exception as ex:
@@ -192,11 +198,11 @@ class DictReplaceableValidation(BasicValidation):
 
                 if errors is None:
                     self.replacement = instance
-
                     return True
 
                 elif errors:
                     self.field_errors.append({instance.__class__: errors})
+                    return False
 
         return super()._is_instance(field_value, field_type)
 
