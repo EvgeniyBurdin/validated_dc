@@ -108,11 +108,18 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')  # Errors log:
-# [{<class '__main__.Person'>: [{'field_name': 'name', 'field_value': 123,
-# 'field_type': <class 'str'>}]}, {'field_name': 'person', 'field_value':
-# {'name': 123, 'age': 30, 'contact': [{'phone': '+7-999-000-00-00'},
-# {'email': 'ivan@mail.ru', 'kind': 'personal'}], 'address': {'city':
-# 'Samara'}}, 'field_type': typing.List[__main__.Person]}]
+# {'person': {'VALUE': {'name': 123, 'age': 30, 'contact': [{'phone':
+# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
+# 'address': {'city': 'Samara'}}, 'TYPE': typing.Union[__main__.Person,
+# typing.List[__main__.Person]], 'ERRORS': [{<class '__main__.Person'>:
+# {'name': {'VALUE': 123, 'TYPE': <class 'str'>, 'ERRORS': [(123,
+# <class 'str'>)]}}}, ({'name': 123, 'age': 30, 'contact': [{'phone':
+# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
+# 'address': {'city': 'Samara'}}, typing.List[__main__.Person]), ({'name':
+# 123, 'age': 30, 'contact': [{'phone': '+7-999-000-00-00'}, {'email':
+# 'ivan@mail.ru', 'kind': 'personal'}], 'address': {'city': 'Samara'}},
+# typing.Union[__main__.Person, typing.List[__main__.Person]])]}}
+
 
 workers.person['name'] = 'Ivan'  # person - is still a dictionary
 print(workers.is_valid(), '\n')
@@ -134,13 +141,8 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')   # Errors log:
-# [{'field_name': 'person', 'field_value': {'name': 'Ivan', 'years': 30,
-# 'contact': [{'phone': '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind':
-#  'personal'}], 'address': {'city': 'Samara'}}, 'field_type':
-# <class '__main__.Person'>, 'field_exception': TypeError("__init__() got an
-# unexpected keyword argument 'years'")}, {'field_name': 'person',
-# 'field_value': {'name': 'Ivan', 'years': 30, 'contact': [{'phone':
+# {'person': {'VALUE': {'name': 'Ivan', 'years': 30, 'contact': [{'phone':
 # '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
-# 'address': {'city': 'Samara'}}, 'field_type': typing.List[__main__.Person],
-# 'field_exception': TypeError("__init__() got an unexpected keyword argument
-# 'years'")}]
+# 'address': {'city': 'Samara'}}, 'TYPE': typing.Union[__main__.Person,
+# typing.List[__main__.Person]], 'EXCEPTION': TypeError("__init__() got an
+# unexpected keyword argument 'years'")}}

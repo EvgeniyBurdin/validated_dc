@@ -45,9 +45,13 @@ print(instance)               # Bar(bar=[Foo(foo=1), Foo(foo=2)])
 instance.bar.append({'foo': '3'})
 print(instance.is_valid())    # False
 print(instance.get_errors())
-# [{'field_name': 'bar', 'field_value': [Foo(foo=1), Foo(foo=2), {'foo': '3'}],
-# 'field_type': <class '__main__.Foo'>}, {<class '__main__.Foo'>:
-# [{'field_name': 'foo', 'field_value': '3', 'field_type': <class 'int'>}]}]
+# {'bar': {'VALUE': [Foo(foo=1), Foo(foo=2), {'foo': '3'}], 'TYPE':
+# typing.Union[__main__.Foo, typing.List[__main__.Foo]], 'ERRORS':
+# [([Foo(foo=1), Foo(foo=2), {'foo': '3'}], <class '__main__.Foo'>),
+# {<class '__main__.Foo'>: {'foo': {'VALUE': '3', 'TYPE': <class 'int'>,
+# 'ERRORS': [('3', <class 'int'>)]}}}, ([Foo(foo=1), Foo(foo=2),
+# {'foo': '3'}], typing.List[__main__.Foo]), ([Foo(foo=1), Foo(foo=2),
+# {'foo': '3'}], typing.Union[__main__.Foo, typing.List[__main__.Foo]])]}}
 
 
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': '3'}])
@@ -62,7 +66,11 @@ instance.bar[2].foo = '3'
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo='3')])
 print(instance.is_valid())  # False
 print(instance.get_errors())
-# [{'field_name': 'bar', 'field_value': [Foo(foo=1), Foo(foo=2), Foo(foo='3')],
-# 'field_type': <class '__main__.Foo'>},{<class '__main__.Foo'>:
-# [{'field_name': 'foo', 'field_value': '3', 'field_type': <class 'int'>}]}]
+# {'bar': {'VALUE': [Foo(foo=1), Foo(foo=2), Foo(foo='3')], 'TYPE':
+# typing.Union[__main__.Foo, typing.List[__main__.Foo]], 'ERRORS':
+# [([Foo(foo=1), Foo(foo=2), Foo(foo='3')], <class '__main__.Foo'>),
+# {<class '__main__.Foo'>: {'foo': {'VALUE': '3', 'TYPE': <class 'int'>,
+# 'ERRORS': [('3', <class 'int'>)]}}}, ([Foo(foo=1), Foo(foo=2),
+# Foo(foo='3')], typing.List[__main__.Foo]), ([Foo(foo=1), Foo(foo=2),
+# Foo(foo='3')], typing.Union[__main__.Foo, typing.List[__main__.Foo]])]}}
 ```
