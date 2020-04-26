@@ -191,7 +191,7 @@ class DictReplaceableValidation(BasicValidation):
                     errors = []
 
                 if errors is None:
-                    self.new_field_value = instance
+                    self.replacement = instance
 
                     return True
 
@@ -202,12 +202,12 @@ class DictReplaceableValidation(BasicValidation):
 
     def _field_validation(self, field: DataclassesField) -> bool:
 
-        self.new_field_value = getattr(self, field.name)
+        self.replacement = False
         result = super()._field_validation(field)
-        if result and self.field_value != self.new_field_value:
+        if result and self.replacement:
             # Если валидация поля прошла успешно и текущее значение у поля
             # изменилось, то установим новое значение у поля
-            setattr(self, self.field_name, self.new_field_value)
+            setattr(self, self.field_name, self.replacement)
 
         return result
 
@@ -319,7 +319,7 @@ class TypingValidation(DictReplaceableValidation):
             # поля.
             # Будем к этому готовы.
             new_field_value = []
-            old_new_field_value = self.new_field_value
+            replacement_occurred = False
 
             # У List допустимый тип стоит первым в кортеже __args__
             field_type = field_type.__args__[0]
@@ -330,20 +330,22 @@ class TypingValidation(DictReplaceableValidation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
-                    if self.field_value != self.new_field_value:
-                        value = self.new_field_value
+                    if self.replacement:
+                        value = self.replacement
+                        replacement_occurred = True
+                        self.replacement = False
                     else:
                         value = item_value
+
                     new_field_value.append(value)
+
                 else:
-                    self.new_field_value = old_new_field_value
                     return False
 
             # Все элементы списка field_value валидные.
-            # Сохраним новый список для поля (если он отличается от текущего
-            # списка у поля, то будет использован для фактической замены
-            # значения поля).
-            self.new_field_value = new_field_value
+            if replacement_occurred:
+                #  Если была замена, то установим новое значение
+                self.replacement = new_field_value
 
             return True
 
