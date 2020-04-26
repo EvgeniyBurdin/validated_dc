@@ -319,6 +319,7 @@ class TypingValidation(DictReplaceableValidation):
             # поля.
             # Будем к этому готовы.
             new_field_value = []
+            old_new_field_value = self.new_field_value
 
             # У List допустимый тип стоит первым в кортеже __args__
             field_type = field_type.__args__[0]
@@ -335,6 +336,7 @@ class TypingValidation(DictReplaceableValidation):
                         value = item_value
                     new_field_value.append(value)
                 else:
+                    self.new_field_value = old_new_field_value
                     return False
 
             # Все элементы списка field_value валидные.
