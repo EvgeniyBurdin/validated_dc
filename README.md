@@ -3,7 +3,7 @@
 Dataclass with data validation.
 Checks the value of its fields by their annotations.
 
-## Capabilities:
+## Capabilities
 
 1. Support for standard and custom Python classes.
 2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`.
@@ -13,9 +13,9 @@ Checks the value of its fields by their annotations.
 
 See detailed examples in `examoles.py`
 
-A simple use case:
+## Simple example
 
-```
+```python
 from data_classes import ValidatedDC
 from dataclasses import dataclass
 
