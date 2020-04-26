@@ -61,7 +61,7 @@ print(workers, '\n')
 # contact=[Phone(phone='+7-999-000-00-00', kind='personal'),
 # Email(email='ivan@mail.ru', kind='personal'),
 # Phone(phone='+7-777-000-00-00', kind='work')],
-# address=Address(city='Samara', zip_code=None))
+# address=Address(city='Samara', zip_code=None)))
 
 person = [
     {
