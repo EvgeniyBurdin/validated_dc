@@ -59,4 +59,13 @@ print(instance.is_valid())    # True
 print(instance.get_errors())  # None
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo=3)]
 
+instance.bar[2].foo = '3'
+print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo='3')])
+print(instance.is_valid())  # False
+print(instance.get_errors())
+# [{'field_name': 'bar', 'field_value': [Foo(foo=1), Foo(foo=2), 
+# Foo(foo='3')], 'field_type': <class '__main__.Foo'>}, 
+# {<class '__main__.Foo'>: [{'field_name': 'foo', 'field_value': '3', 
+# 'field_type': <class 'int'>}]}]
+
 ```
