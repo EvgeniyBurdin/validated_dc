@@ -41,8 +41,6 @@ from dataclasses import dataclass, asdict
 from dataclasses import fields as dataclasses_fields
 from typing import Any, Callable, List, Literal, Optional, Union
 
-from utils import value_readable_form
-
 
 @dataclass
 class BasicValidation:
@@ -107,7 +105,7 @@ class BasicValidation:
 
         if not result:
             self.field_errors.append(
-                (value_readable_form(field_value), field_type)
+                (field_value, field_type)
             )
 
         return result
@@ -128,7 +126,7 @@ class BasicValidation:
             # Если проверка поля завершилась неудачно, то добавим список
             # ошибок поля в ошибки всего экземпляра.
             errors = {
-                'VALUE': value_readable_form(self.field_value),
+                'VALUE': self.field_value,
                 'TYPE': self.field_type
             }
             if self.field_exception is not None:
