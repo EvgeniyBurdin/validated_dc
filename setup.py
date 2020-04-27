@@ -1,14 +1,14 @@
 from os.path import dirname, join
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 setup(
     name='validated-dc',
-    version='0.1',
+    version='0.2',
     license='BSD',
     author='Evgeniy Burdin',
     author_email='e.s.burdin@mail.ru',
-    packages=find_packages(),
+    py_modules=['validated_dc'],
     description='Dataclass with data validation.',
     long_description=open(join(dirname(__file__), 'README.md')).read(),
     long_description_content_type="text/markdown",

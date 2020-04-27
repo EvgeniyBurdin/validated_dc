@@ -13,6 +13,12 @@ Checks the value of its fields by their annotations.
 
 See detailed examples in `examples.py`.
 
+## Install
+
+```bash
+pip install validated-dc
+```
+
 ## Simple example
 
 ```python
