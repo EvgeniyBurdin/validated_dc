@@ -1,4 +1,4 @@
-from data_classes import ValidatedDC
+from validated_dc import ValidatedDC
 from dataclasses import dataclass
 
 from typing import List, Union, Literal, Optional

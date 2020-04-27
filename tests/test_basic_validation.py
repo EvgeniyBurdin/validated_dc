@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from data_classes import BasicValidation
+from validated_dc import BasicValidation
 
 
 def test__post_init__():
