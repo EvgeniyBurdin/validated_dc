@@ -312,11 +312,9 @@ class TypingValidation(DictReplaceableValidation):
             # поля.
             # Будем к этому готовы.
             new_field_value = []
-            replacement_occurred = False
 
             # У List допустимый тип стоит первым в кортеже __args__
             field_type = field_type.__args__[0]
-
             for item_value in field_value:
 
                 if self._is_instance(item_value, field_type):
@@ -325,7 +323,6 @@ class TypingValidation(DictReplaceableValidation):
                     # элемент-экземпляр потомка родительского класса)
                     if self.replacement:
                         value = self.replacement
-                        replacement_occurred = True
                         self.replacement = False
                     else:
                         value = item_value
@@ -336,9 +333,7 @@ class TypingValidation(DictReplaceableValidation):
                     return False
 
             # Все элементы списка field_value валидные.
-            if replacement_occurred:
-                #  Если была замена, то установим новое значение
-                self.replacement = new_field_value
+            self.replacement = new_field_value
 
             return True
 
