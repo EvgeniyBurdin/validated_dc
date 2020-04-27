@@ -13,7 +13,7 @@ Checks the value of its fields by their annotations.
 
 See detailed examples in `examples.py`.
 
-## Install
+## Installation
 
 ```bash
 pip install validated-dc
