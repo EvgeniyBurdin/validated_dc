@@ -1,0 +1,24 @@
+from os.path import dirname, join
+
+from setuptools import find_packages, setup
+
+setup(
+    name='validated-dc',
+    version='0.1',
+    license='BSD',
+    author='Evgeniy Burdin',
+    author_email='e.s.burdin@mail.ru',
+    packages=find_packages(),
+    description='Dataclass with data validation.',
+    long_description=open(join(dirname(__file__), 'README.md')).read(),
+    long_description_content_type="text/markdown",
+    url='https://github.com/EvgeniyBurdin/validated_dc',
+    keywords='validated dataclasses typing dict api',
+    classifiers=[
+        'Programming Language :: Python :: 3.8',
+        'License :: OSI Approved :: BSD License',
+        'Operating System :: OS Independent',
+        'Topic :: Software Development',
+    ],
+    python_requires='>=3.8',
+)
