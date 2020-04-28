@@ -4,6 +4,7 @@ from validated_dc import BasicValidation
 
 
 class СustomСlass:
+
     foo = 'foo'
 
     def bar(self):
@@ -15,6 +16,7 @@ class Foo(BasicValidation):
     i: int
     s: str
     l: list
+    # ... You can use all other standard python classes.
     cc: СustomСlass
 
 
