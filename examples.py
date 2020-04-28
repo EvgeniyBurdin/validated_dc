@@ -58,7 +58,7 @@ print(workers.get_errors(), '\n')
 
 print(workers, '\n')
 # Workers(person=Person(name='Ivan', age=30,
-# contact=[Phone(phone='+7-999-000-00-00', kind='personal'),
+# contact=[Phone(phone='+7-999-000-00-00', kind='personal'), <-- 'kind' default
 # Email(email='ivan@mail.ru', kind='personal'),
 # Phone(phone='+7-777-000-00-00', kind='work')],
 # address=Address(city='Samara', zip_code=None)))
