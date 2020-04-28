@@ -103,11 +103,11 @@ class BasicValidation:
             result = isinstance(field_value, field_type)
 
         except Exception as ex:
-            self.field_exception = ex
+            self._field_exception = ex
             result = False
 
         if not result:
-            self.field_errors.append(
+            self._field_errors.append(
                 (field_value, field_type)
             )
 
@@ -117,27 +117,27 @@ class BasicValidation:
         """
             Устанавливает свойства для текущего поля и вызывает проверку.
         """
-        self.field_errors = []
-        self.field_exception = None
-        self.field_name = field.name
-        self.field_value = getattr(self, field.name)
-        self.field_type = field.type
+        self._field_errors = []
+        self._field_exception = None
+        self._field_name = field.name
+        self._field_value = getattr(self, field.name)
+        self._field_type = field.type
 
-        result = self._is_instance(self.field_value, self.field_type)
+        result = self._is_instance(self._field_value, self._field_type)
 
         if not result:
             # Если проверка поля завершилась неудачно, то добавим список
             # ошибок поля в ошибки всего экземпляра.
             errors = {
-                'VALUE': self.field_value,
-                'TYPE': self.field_type
+                'VALUE': self._field_value,
+                'TYPE': self._field_type
             }
-            if self.field_exception is not None:
-                errors['EXCEPTION'] = self.field_exception
+            if self._field_exception is not None:
+                errors['EXCEPTION'] = self._field_exception
             else:
-                errors['ERRORS'] = self.field_errors
+                errors['ERRORS'] = self._field_errors
 
-            self._errors[self.field_name] = errors
+            self._errors[self._field_name] = errors
 
         return result
 
@@ -192,27 +192,27 @@ class DictReplaceableValidation(BasicValidation):
                     errors = instance.get_errors()
 
                 except Exception as ex:
-                    self.field_exception = ex
+                    self._field_exception = ex
                     errors = []
 
                 if errors is None:
-                    self.replacement = instance
+                    self._replacement = instance
                     return True
 
                 elif errors:
-                    self.field_errors.append({instance.__class__: errors})
+                    self._field_errors.append({instance.__class__: errors})
                     return False
 
         return super()._is_instance(field_value, field_type)
 
     def _field_validation(self, field: DataclassesField) -> bool:
 
-        self.replacement = False
+        self._replacement = False
         result = super()._field_validation(field)
-        if self._replace and result and self.replacement:
+        if self._replace and result and self._replacement:
             # Если валидация поля прошла успешно и текущее значение у поля
             # изменилось, то установим новое значение у поля
-            setattr(self, self.field_name, self.replacement)
+            setattr(self, self._field_name, self._replacement)
 
         return result
 
@@ -250,7 +250,7 @@ class TypingValidation(DictReplaceableValidation):
                 if result:
                     return True
                 else:
-                    self.field_errors.append((field_value, field_type))
+                    self._field_errors.append((field_value, field_type))
                     return False
             else:
                 error = '%s - not supported' % str_field_type
@@ -331,9 +331,9 @@ class TypingValidation(DictReplaceableValidation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
-                    if self.replacement:
-                        value = self.replacement
-                        self.replacement = False
+                    if self._replacement:
+                        value = self._replacement
+                        self._replacement = False
                     else:
                         value = item_value
 
@@ -343,7 +343,7 @@ class TypingValidation(DictReplaceableValidation):
                     return False
 
             # Все элементы списка field_value валидные.
-            self.replacement = new_field_value
+            self._replacement = new_field_value
 
             return True
 
