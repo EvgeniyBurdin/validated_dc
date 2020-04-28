@@ -167,6 +167,13 @@ class DictReplaceableValidation(BasicValidation):
         Так же, при этом, происходит замена словаря на экземпляр датакласса
         из аннотации (если данные из словаря валидны).
     """
+    def _init_validation(self) -> None:
+        """
+            Устанавливает свойства используемые при валидации
+        """
+        super()._init_validation()
+        self._replace = True
+
     def _is_instance(self, field_value: Any, field_type: type) -> bool:
 
         if type(field_type) == type and \
@@ -202,7 +209,7 @@ class DictReplaceableValidation(BasicValidation):
 
         self.replacement = False
         result = super()._field_validation(field)
-        if result and self.replacement:
+        if self._replace and result and self.replacement:
             # Если валидация поля прошла успешно и текущее значение у поля
             # изменилось, то установим новое значение у поля
             setattr(self, self.field_name, self.replacement)
