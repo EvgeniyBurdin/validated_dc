@@ -181,9 +181,9 @@ class DictReplaceableValidation(BasicValidation):
 
             if isinstance(value, dict) or isinstance(value, type_):
 
-                data = asdict(value) if isinstance(value, type_) else value
+                value = asdict(value) if isinstance(value, type_) else value
                 try:
-                    instance = type_(**data)
+                    instance = type_(**value)
                     errors = instance.get_errors()
                 except Exception as ex:
                     self._field_exception = ex
