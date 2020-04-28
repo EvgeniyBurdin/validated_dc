@@ -92,18 +92,18 @@ class BasicValidation:
         """
         self._errors = {}
 
-    def _is_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_instance(self, value: Any, type_: type) -> bool:
         """
             Проверка значения на соответствие типу.
         """
         try:
-            result = isinstance(field_value, field_type)
+            result = isinstance(value, type_)
         except Exception as ex:
             self._field_exception = ex
             result = False
 
         if not result:
-            self._field_errors.append((field_value, field_type))
+            self._field_errors.append((value, type_))
 
         return result
 
@@ -174,21 +174,16 @@ class DictReplaceableValidation(BasicValidation):
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
-    def _is_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_instance(self, value: Any, type_: type) -> bool:
 
-        if type(field_type) == type and \
-           issubclass(field_type, DictReplaceableValidation):
+        if type(type_) == type and \
+           issubclass(type_, DictReplaceableValidation):
 
-            if isinstance(field_value, dict) or \
-               isinstance(field_value, field_type):
+            if isinstance(value, dict) or isinstance(value, type_):
 
-                if isinstance(field_value, field_type):
-                    value = asdict(field_value)
-                else:
-                    value = field_value
-
+                data = asdict(value) if isinstance(value, type_) else value
                 try:
-                    instance = field_type(**value)
+                    instance = type_(**data)
                     errors = instance.get_errors()
                 except Exception as ex:
                     self._field_exception = ex
@@ -201,7 +196,7 @@ class DictReplaceableValidation(BasicValidation):
                     self._field_errors.append({instance.__class__: errors})
                     return False
 
-        return super()._is_instance(field_value, field_type)
+        return super()._is_instance(value, type_)
 
     def _init_field_validation(self, field: DataclassesField) -> None:
 
