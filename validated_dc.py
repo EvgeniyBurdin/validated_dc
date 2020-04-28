@@ -176,8 +176,8 @@ class DictReplaceableValidation(BasicValidation):
 
     def _is_instance(self, value: Any, type_: type) -> bool:
 
-        if type(type_) == type and \
-           issubclass(type_, DictReplaceableValidation):
+        is_type = type(type_) == type
+        if is_type and issubclass(type_, DictReplaceableValidation):
 
             if isinstance(value, dict) or isinstance(value, type_):
 
@@ -187,12 +187,12 @@ class DictReplaceableValidation(BasicValidation):
                     errors = instance.get_errors()
                 except Exception as ex:
                     self._field_exception = ex
-                    errors = []
+                    return False
 
                 if errors is None:
                     self._replacement = instance
                     return True
-                elif errors:
+                else:
                     self._field_errors.append({instance.__class__: errors})
                     return False
 
@@ -304,7 +304,7 @@ class TypingValidation(DictReplaceableValidation):
         for item_type in type_.__args__:
             if self._is_instance(value, item_type):
                 return True
-        # Нет ни одного типа, подходящего для field_value
+        # Нет ни одного типа, подходящего для value
         return False
 
     def _is_list_instance(self, value: Any, type_: type) -> bool:
