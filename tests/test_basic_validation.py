@@ -39,10 +39,17 @@ def test_basic_validation_not_valid():
 
     nocorrect_input = correct_input
     nocorrect_input['s'] = 2
+    nocorrect_input['cc'] = 5
 
     instance = Foo(**nocorrect_input)
 
-    assert instance.get_errors()
+    errors = instance.get_errors()
+    # Есть ошибки в данных
+    assert errors
+
+    fields_errors = set([key for key in errors.keys()])
+    # Данные в полях s и cc имеют ошибки
+    assert fields_errors == set(['s', 'cc'])
 
 
 def test__post_init__():
