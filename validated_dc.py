@@ -42,9 +42,6 @@ from dataclasses import fields as dataclasses_fields
 from typing import Any, Callable, List, Literal, Optional, Union
 
 
-__version__ = '0.1'
-
-
 @dataclass
 class BasicValidation:
     """

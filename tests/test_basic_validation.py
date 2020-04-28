@@ -33,6 +33,7 @@ def test_basic_validation_valid():
     instance = Foo(**correct_input)
 
     assert instance.get_errors() is None
+    assert instance.is_valid()
 
 
 def test_basic_validation_not_valid():
@@ -43,11 +44,11 @@ def test_basic_validation_not_valid():
 
     instance = Foo(**nocorrect_input)
 
-    errors = instance.get_errors()
     # Есть ошибки в данных
-    assert errors
+    assert instance.get_errors()
+    assert not instance.is_valid()
 
-    fields_errors = set([key for key in errors.keys()])
+    fields_errors = set([key for key in instance.get_errors().keys()])
     # Данные в полях s и cc имеют ошибки
     assert fields_errors == set(['s', 'cc'])
 
