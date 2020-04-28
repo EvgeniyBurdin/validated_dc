@@ -237,123 +237,120 @@ class TypingValidation(DictReplaceableValidation):
 
         Поддерживаемые алиасы перечислены в константе STR_ALIASES.
     """
-    def _is_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_instance(self, value: Any, type_: type) -> bool:
 
-        str_field_type = str(field_type)
+        str_type = str(type_)
 
-        if self._is_typing_alias(str_field_type):
+        if self._is_typing_alias(str_type):
 
-            if self._is_supported_alias(str_field_type):
-                is_instance = self._get_alias_method(str_field_type)
-                result = is_instance(field_value, field_type)
+            if self._is_supported_alias(str_type):
+                is_instance = self._get_alias_method(str_type)
+                result = is_instance(value, type_)
                 if result:
                     return True
                 else:
-                    self._field_errors.append((field_value, field_type))
+                    self._field_errors.append((value, type_))
                     return False
             else:
-                error = '%s - not supported' % str_field_type
+                error = '%s - not supported' % str_type
                 raise Exception(error)
 
-        return super()._is_instance(field_value, field_type)
+        return super()._is_instance(value, type_)
 
     @staticmethod
-    def _is_typing_alias(field_type: str) -> bool:
+    def _is_typing_alias(type_: str) -> bool:
         """
-            Проверяет является ли field_type алиасом из модуля typing
+            Проверяет является ли type_ алиасом из модуля typing
         """
         str_alias = list(STR_ALIASES.values())[0]
         prefix = str_alias[:str_alias.find('.')]
-        return field_type.startswith(prefix)
+        return type_.startswith(prefix)
 
     @staticmethod
-    def _is_supported_alias(field_type: str) -> bool:
+    def _is_supported_alias(type_: str) -> bool:
         """
-            Проверяет является ли field_type поддерживаемым алиасом
+            Проверяет является ли type_ поддерживаемым алиасом
         """
         for str_alias in STR_ALIASES.values():
-            if field_type.startswith(str_alias):
+            if type_.startswith(str_alias):
                 return True
         return False
 
-    def _get_alias_method(self, field_type: str) -> Optional[Callable]:
+    def _get_alias_method(self, type_: str) -> Optional[Callable]:
         """
             Возавращает метод для проверки алиаса
         """
 
-        if field_type.startswith(STR_ALIASES[Union]):
+        if type_.startswith(STR_ALIASES[Union]):
             return self._is_union_instance
 
-        elif field_type.startswith(STR_ALIASES[List]):
+        elif type_.startswith(STR_ALIASES[List]):
             return self._is_list_instance
 
-        elif field_type.startswith(STR_ALIASES[Literal]):
+        elif type_.startswith(STR_ALIASES[Literal]):
             return self._is_literal_instance
 
-        elif field_type.startswith(STR_ALIASES[Any]):
+        elif type_.startswith(STR_ALIASES[Any]):
             return self._is_any_instance
 
-    def _is_union_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_union_instance(self, value: Any, type_: type) -> bool:
         """
             Валидация на алиасы Optional и Union.
 
-            Проверяет является ли field_value экземпляром одного из типов из
-            кортежа field_type.__args__
+            Проверяет является ли value экземпляром одного из типов из
+            кортежа type_.__args__
         """
         # У Union допустимые типы перечислены в кортеже __args__
-        for item_type in field_type.__args__:
-            if self._is_instance(field_value, item_type):
+        for item_type in type_.__args__:
+            if self._is_instance(value, item_type):
                 return True
         # Нет ни одного типа, подходящего для field_value
         return False
 
-    def _is_list_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_list_instance(self, value: Any, type_: type) -> bool:
         """
             Валидация на алиас List.
 
-            Проверяет является ли field_value списком экземпляров field_type.
+            Проверяет является ли value списком экземпляров type_.
         """
-        if isinstance(field_value, list):
+        if isinstance(value, list):
             # Имеем дело со списком. В родительском классе возможна замена
             # значения-словаря на значение-экземпляр потомка родительского
             # класса. То есть, возможно изменение списка значений текущего
             # поля.
             # Будем к этому готовы.
-            new_field_value = []
+            new_value = []
 
             # У List допустимый тип стоит первым в кортеже __args__
-            field_type = field_type.__args__[0]
-            for item_value in field_value:
-
-                if self._is_instance(item_value, field_type):
+            type_ = type_.__args__[0]
+            for item_value in value:
+                if self._is_instance(item_value, type_):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
                     if self._replacement:
-                        value = self._replacement
+                        item_value = self._replacement
                         self._replacement = False
-                    else:
-                        value = item_value
-                    new_field_value.append(value)
+                    new_value.append(item_value)
                 else:
                     return False
 
-            # Все элементы списка field_value валидные.
-            self._replacement = new_field_value
+            # Все элементы списка value валидные.
+            self._replacement = new_value
             return True
         else:
             # Значение поля - не список, а это ошибка валидации
             return False
 
-    def _is_literal_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_literal_instance(self, value: Any, type_: type) -> bool:
         """
             Валидация на алиас Literal.
 
-            Проверяет является ли field_value одним из field_type.__args__
+            Проверяет является ли value одним из type_.__args__
         """
-        return field_value in field_type.__args__
+        return value in type_.__args__
 
-    def _is_any_instance(self, field_value: Any, field_type: type) -> bool:
+    def _is_any_instance(self, value: Any, type_: type) -> bool:
         """
             Валидация на алиас Any.
 
