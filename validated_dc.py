@@ -68,7 +68,7 @@ class BasicValidation:
     def get_errors(self) -> Optional[list]:
         """
             Возвращает список с ошибками валидации, или None если
-            валидация данных прошла успешна.
+            их нет (то есть - экземпляр валиден).
 
             Можно использовать сразу после создания экземпляра для определения
             его валидности, а так же после вызова метода is_valid(self).
@@ -98,21 +98,18 @@ class BasicValidation:
         """
         try:
             result = isinstance(field_value, field_type)
-
         except Exception as ex:
             self._field_exception = ex
             result = False
 
         if not result:
-            self._field_errors.append(
-                (field_value, field_type)
-            )
+            self._field_errors.append((field_value, field_type))
 
         return result
 
-    def _field_validation(self, field: DataclassesField) -> bool:
+    def _init_field_validation(self, field: DataclassesField) -> None:
         """
-            Устанавливает свойства для текущего поля и вызывает проверку.
+            Устанавливает свойства используемые при валидации одного поля
         """
         self._field_errors = []
         self._field_exception = None
@@ -120,32 +117,37 @@ class BasicValidation:
         self._field_value = getattr(self, field.name)
         self._field_type = field.type
 
-        result = self._is_instance(self._field_value, self._field_type)
+    def _is_field_valid(self, field: DataclassesField) -> bool:
+        """
+            Устанавливает свойства для текущего поля и вызывает его проверку
+        """
+        self._init_field_validation(field)
 
-        if not result:
-            # Если проверка поля завершилась неудачно, то добавим список
-            # ошибок поля в ошибки всего экземпляра.
-            errors = {
-                'VALUE': self._field_value,
-                'TYPE': self._field_type
-            }
-            if self._field_exception is not None:
-                errors['EXCEPTION'] = self._field_exception
-            else:
-                errors['ERRORS'] = self._field_errors
+        return self._is_instance(self._field_value, self._field_type)
 
-            self._errors[self._field_name] = errors
+    def _save_current_field_errors(self) -> None:
+        """
+            Записывает ошибки текущего поля в self._errors
+            (в ошибки всего экземпляра)
+        """
+        errors = {'VALUE': self._field_value, 'TYPE': self._field_type}
 
-        return result
+        if self._field_exception is not None:
+            errors['EXCEPTION'] = self._field_exception
+        else:
+            errors['ERRORS'] = self._field_errors
+
+        self._errors[self._field_name] = errors
 
     def _run_validation(self) -> None:
         """
-            Запускает валидацию полей
+            Выполняет инициализацию валидации и запускает проверку полей
         """
         self._init_validation()
 
         for field in dataclasses_fields(self):
-            self._field_validation(field)
+            if not self._is_field_valid(field):
+                self._save_current_field_errors()
 
 
 # ----------------------------------------------------------------------------
@@ -169,6 +171,9 @@ class DictReplaceableValidation(BasicValidation):
             Устанавливает свойства используемые при валидации
         """
         super()._init_validation()
+        # Флаг - выполнять замену словаря на экземпляр класса-потомка
+        # DictReplaceableValidation из аннотации поля (в случае пригодности
+        # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
     def _is_instance(self, field_value: Any, field_type: type) -> bool:
@@ -187,7 +192,6 @@ class DictReplaceableValidation(BasicValidation):
                 try:
                     instance = field_type(**value)
                     errors = instance.get_errors()
-
                 except Exception as ex:
                     self._field_exception = ex
                     errors = []
@@ -195,20 +199,25 @@ class DictReplaceableValidation(BasicValidation):
                 if errors is None:
                     self._replacement = instance
                     return True
-
                 elif errors:
                     self._field_errors.append({instance.__class__: errors})
                     return False
 
         return super()._is_instance(field_value, field_type)
 
-    def _field_validation(self, field: DataclassesField) -> bool:
+    def _init_field_validation(self, field: DataclassesField) -> None:
 
+        super()._init_field_validation(field)
+        # Свойство для экземпляра предназначенного для замены словаря
         self._replacement = False
-        result = super()._field_validation(field)
+
+    def _is_field_valid(self, field: DataclassesField) -> bool:
+
+        result = super()._is_field_valid(field)
+
+        # Если включен флаг замены и валидация поля прошла успешно и
+        # есть чем заменять, то установим новое значение у поля
         if self._replace and result and self._replacement:
-            # Если валидация поля прошла успешно и текущее значение у поля
-            # изменилось, то установим новое значение у поля
             setattr(self, self._field_name, self._replacement)
 
         return result
@@ -302,7 +311,6 @@ class TypingValidation(DictReplaceableValidation):
         for item_type in field_type.__args__:
             if self._is_instance(field_value, item_type):
                 return True
-
         # Нет ни одного типа, подходящего для field_value
         return False
 
@@ -333,17 +341,13 @@ class TypingValidation(DictReplaceableValidation):
                         self._replacement = False
                     else:
                         value = item_value
-
                     new_field_value.append(value)
-
                 else:
                     return False
 
             # Все элементы списка field_value валидные.
             self._replacement = new_field_value
-
             return True
-
         else:
             # Значение поля - не список, а это ошибка валидации
             return False
@@ -395,7 +399,6 @@ class ValidatedDC(TypingValidation):
                         get_field_validated_dc(item, set_validated_dc)
             elif type(annotation) == type and \
                     issubclass(annotation, ValidatedDC):
-
                 set_validated_dc.add(annotation)
 
             return set_validated_dc
