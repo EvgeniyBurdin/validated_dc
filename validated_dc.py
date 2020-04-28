@@ -65,9 +65,9 @@ class BasicValidation:
         """
         self._run_validation()
 
-    def get_errors(self) -> Optional[list]:
+    def get_errors(self) -> Optional[dict]:
         """
-            Возвращает список с ошибками валидации, или None если
+            Возвращает словарь с ошибками валидации, или None если
             их нет (то есть - экземпляр валиден).
 
             Можно использовать сразу после создания экземпляра для определения
@@ -88,7 +88,7 @@ class BasicValidation:
 
     def _init_validation(self) -> None:
         """
-            Устанавливает свойства используемые при валидации
+            Инициализация валидации
         """
         self._errors = {}
 
@@ -109,7 +109,7 @@ class BasicValidation:
 
     def _init_field_validation(self, field: DataclassesField) -> None:
         """
-            Устанавливает свойства используемые при валидации одного поля
+            Инициализация валидации для текущего поля
         """
         self._field_errors = []
         self._field_exception = None
@@ -119,7 +119,7 @@ class BasicValidation:
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
         """
-            Устанавливает свойства для текущего поля и вызывает его проверку
+            Запускает проверку поля
         """
         self._init_field_validation(field)
 
@@ -141,7 +141,7 @@ class BasicValidation:
 
     def _run_validation(self) -> None:
         """
-            Выполняет инициализацию валидации и запускает проверку полей
+           Запускает проверку всех полей
         """
         self._init_validation()
 
@@ -167,9 +167,7 @@ class DictReplaceableValidation(BasicValidation):
         из аннотации (если данные из словаря валидны).
     """
     def _init_validation(self) -> None:
-        """
-            Устанавливает свойства используемые при валидации
-        """
+
         super()._init_validation()
         # Флаг - выполнять замену словаря на экземпляр класса-потомка
         # DictReplaceableValidation из аннотации поля (в случае пригодности
