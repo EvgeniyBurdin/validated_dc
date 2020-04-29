@@ -59,13 +59,10 @@ print(instance)               # Bar(bar=[Foo(foo=1), Foo(foo=2)])
 instance.bar.append({'foo': '3'})
 print(instance.is_valid())    # False
 print(instance.get_errors())
-# {'bar': {'VALUE': [Foo(foo=1), Foo(foo=2), {'foo': '3'}], 'TYPE':
-# typing.Union[__main__.Foo, typing.List[__main__.Foo]], 'ERRORS':
-# [([Foo(foo=1), Foo(foo=2), {'foo': '3'}], <class '__main__.Foo'>),
-# {<class '__main__.Foo'>: {'foo': {'VALUE': '3', 'TYPE': <class 'int'>,
-# 'ERRORS': [('3', <class 'int'>)]}}}, ([Foo(foo=1), Foo(foo=2),
-# {'foo': '3'}], typing.List[__main__.Foo]), ([Foo(foo=1), Foo(foo=2),
-# {'foo': '3'}], typing.Union[__main__.Foo, typing.List[__main__.Foo]])]}}
+# {'bar': [InstanceValidationError(instance_class=<class '__main__.Foo'>,
+# errors={'foo': [BasicValidationError(value='3', annotation=<class 'int'>,
+# exception=None)]}, exception=None), ListValidationError(item_number=2,
+# item_value={'foo': '3'}, annotation=<class '__main__.Foo'>)]}
 
 
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': '3'}])
@@ -80,11 +77,8 @@ instance.bar[2].foo = '3'
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo='3')])
 print(instance.is_valid())  # False
 print(instance.get_errors())
-# {'bar': {'VALUE': [Foo(foo=1), Foo(foo=2), Foo(foo='3')], 'TYPE':
-# typing.Union[__main__.Foo, typing.List[__main__.Foo]], 'ERRORS':
-# [([Foo(foo=1), Foo(foo=2), Foo(foo='3')], <class '__main__.Foo'>),
-# {<class '__main__.Foo'>: {'foo': {'VALUE': '3', 'TYPE': <class 'int'>,
-# 'ERRORS': [('3', <class 'int'>)]}}}, ([Foo(foo=1), Foo(foo=2),
-# Foo(foo='3')], typing.List[__main__.Foo]), ([Foo(foo=1), Foo(foo=2),
-# Foo(foo='3')], typing.Union[__main__.Foo, typing.List[__main__.Foo]])]}}
+# {'bar': [InstanceValidationError(instance_class=<class '__main__.Foo'>,
+# errors={'foo': [BasicValidationError(value='3', annotation=<class 'int'>,
+# exception=None)]}, exception=None), ListValidationError(item_number=2,
+# item_value=Foo(foo='3'), annotation=<class '__main__.Foo'>)]}
 ```

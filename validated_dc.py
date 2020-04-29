@@ -13,15 +13,15 @@
         ValidatedDC, которые используются в аннотациях полей.
 
     @dataclass
-    class TypingValidation(DictReplaceableValidation):
+    class TypingValidation(InstanceValidation):
         Добавляет для использования в аннотациях некоторые алиасы из модуля
         typing, на данный момент это: List, Union, Optional, Any и Literal.
 
     @dataclass
-    class DictReplaceableValidation(BasicValidation):
+    class InstanceValidation(BasicValidation):
         Добавляет возможность при создании экземпляра использовать словарь,
         при инициализации значения поля, вместо экземпляра потомка
-        DictReplaceableValidation указанного в аннотации поля.
+        InstanceValidation указанного в аннотации поля.
         Это может пригодиться, например, при получении json-словаря по апи,
         для автоматической валидации значений.
         Так же, при этом, происходит замена словаря на экземпляр датакласса
@@ -40,6 +40,13 @@ from dataclasses import Field as DataclassesField
 from dataclasses import dataclass, asdict
 from dataclasses import fields as dataclasses_fields
 from typing import Any, Callable, List, Literal, Optional, Union
+
+
+@dataclass
+class BasicValidationError:
+    value: Any
+    annotation: type
+    exception: Optional[Exception]
 
 
 @dataclass
@@ -98,12 +105,15 @@ class BasicValidation:
         """
         try:
             result = isinstance(value, type_)
+            exception = None
         except Exception as ex:
-            self._field_exception = ex
+            exception = ex
             result = False
 
         if not result:
-            self._field_errors.append((value, type_))
+            self._field_errors.append(
+                BasicValidationError(value, type_, exception)
+            )
 
         return result
 
@@ -112,7 +122,6 @@ class BasicValidation:
             Инициализация валидации для текущего поля
         """
         self._field_errors = []
-        self._field_exception = None
         self._field_name = field.name
         self._field_value = getattr(self, field.name)
         self._field_type = field.type
@@ -130,16 +139,7 @@ class BasicValidation:
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        errors = {
-            'VALUE': self._field_value,
-            'TYPE': self._field_type,
-            'ERRORS': self._field_errors
-        }
-
-        if self._field_exception is not None:
-            errors['EXCEPTION'] = self._field_exception
-
-        self._errors[self._field_name] = errors
+        self._errors[self._field_name] = self._field_errors
 
     def _run_validation(self) -> None:
         """
@@ -156,11 +156,18 @@ class BasicValidation:
 
 
 @dataclass
-class DictReplaceableValidation(BasicValidation):
+class InstanceValidationError:
+    instance_class: type
+    errors: Optional[dict]
+    exception: Optional[Exception]
+
+
+@dataclass
+class InstanceValidation(BasicValidation):
     """
         Добавляет возможность при создании экземпляра использовать словарь,
         при инициализации значения поля, вместо экземпляра потомка
-        DictReplaceableValidation указанного в аннотации поля.
+        InstanceValidation указанного в аннотации поля.
 
         Это может пригодиться, например, при получении json-словаря по апи,
         для автоматической валидации значений.
@@ -172,30 +179,33 @@ class DictReplaceableValidation(BasicValidation):
 
         super()._init_validation()
         # Флаг - выполнять замену словаря на экземпляр класса-потомка
-        # DictReplaceableValidation из аннотации поля (в случае пригодности
+        # InstanceValidation из аннотации поля (в случае пригодности
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
     def _is_instance(self, value: Any, type_: type) -> bool:
 
         is_type = type(type_) == type
-        if is_type and issubclass(type_, DictReplaceableValidation):
+        if is_type and issubclass(type_, InstanceValidation):
 
             if isinstance(value, dict) or isinstance(value, type_):
 
                 value = asdict(value) if isinstance(value, type_) else value
                 try:
+                    exception = None
+                    errors = None
                     instance = type_(**value)
                     errors = instance.get_errors()
                 except Exception as ex:
-                    self._field_exception = ex
-                    return False
+                    exception = ex
 
-                if errors is None:
+                if errors is None and exception is None:
                     self._replacement = instance
                     return True
                 else:
-                    self._field_errors.append({instance.__class__: errors})
+                    self._field_errors = [
+                        InstanceValidationError(type_, errors, exception)
+                    ]
                     return False
 
         return super()._is_instance(value, type_)
@@ -232,7 +242,20 @@ STR_ALIASES = {
 
 
 @dataclass
-class TypingValidation(DictReplaceableValidation):
+class ListValidationError:
+    item_number: int
+    item_value: Any
+    annotation: type
+
+
+@dataclass
+class LiteralValidationError:
+    value: Any
+    annotation: type
+
+
+@dataclass
+class TypingValidation(InstanceValidation):
     """
         Добавляет для использования в аннотациях некоторые алиасы из модуля
         typing.
@@ -247,12 +270,7 @@ class TypingValidation(DictReplaceableValidation):
 
             if self._is_supported_alias(str_type):
                 is_instance = self._get_alias_method(str_type)
-                result = is_instance(value, type_)
-                if result:
-                    return True
-                else:
-                    self._field_errors.append((value, type_))
-                    return False
+                return is_instance(value, type_)
             else:
                 error = '%s - not supported' % str_type
                 raise Exception(error)
@@ -325,7 +343,7 @@ class TypingValidation(DictReplaceableValidation):
 
             # У List допустимый тип стоит первым в кортеже __args__
             type_ = type_.__args__[0]
-            for item_value in value:
+            for i, item_value in enumerate(value):
                 if self._is_instance(item_value, type_):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
@@ -335,6 +353,9 @@ class TypingValidation(DictReplaceableValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
+                    self._field_errors.append(
+                        ListValidationError(i, item_value, type_)
+                    )
                     return False
 
             # Все элементы списка value валидные.
@@ -350,7 +371,14 @@ class TypingValidation(DictReplaceableValidation):
 
             Проверяет является ли value одним из type_.__args__
         """
-        return value in type_.__args__
+        result = value in type_.__args__
+
+        if not result:
+            self._field_errors.append(
+                LiteralValidationError(value, type_)
+            )
+
+        return result
 
     def _is_any_instance(self, value: Any, type_: type) -> bool:
         """

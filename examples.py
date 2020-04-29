@@ -99,7 +99,7 @@ person = {
     'name': 123,  # <- Error! Not str.
     'age': 30,
     'contact': [
-        {'phone': '+7-999-000-00-00'},
+        {'phone': 123},  # <- Error! Not str.
         {'email': 'ivan@mail.ru', 'kind': 'personal'}
     ],
     'address': {'city': 'Samara'}
@@ -108,20 +108,19 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')  # Errors log:
-# {'person': {'VALUE': {'name': 123, 'age': 30, 'contact': [{'phone':
-# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
-# 'address': {'city': 'Samara'}}, 'TYPE': typing.Union[__main__.Person,
-# typing.List[__main__.Person]], 'ERRORS': [{<class '__main__.Person'>:
-# {'name': {'VALUE': 123, 'TYPE': <class 'str'>, 'ERRORS': [(123,
-# <class 'str'>)]}}}, ({'name': 123, 'age': 30, 'contact': [{'phone':
-# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
-# 'address': {'city': 'Samara'}}, typing.List[__main__.Person]), ({'name':
-# 123, 'age': 30, 'contact': [{'phone': '+7-999-000-00-00'}, {'email':
-# 'ivan@mail.ru', 'kind': 'personal'}], 'address': {'city': 'Samara'}},
-# typing.Union[__main__.Person, typing.List[__main__.Person]])]}}
+# {'person': [InstanceValidationError(instance_class=<class
+# '__main__.Person'>, errors={'name': [BasicValidationError(value=123,
+# annotation=<class 'str'>, exception=None)], 'contact':
+# [InstanceValidationError(instance_class=<class '__main__.Email'>,
+# errors=None, exception=TypeError("__init__() got an unexpected keyword
+# argument 'mob'")), ListValidationError(item_number=0, item_value={'mob':
+# '+7-999-000-00-00'}, annotation=typing.Union[__main__.Phone,
+# __main__.Email])]}, exception=None)]}
 
-
-workers.person['name'] = 'Ivan'  # person - is still a dictionary
+# person - is still a dictionary
+# change the values to valid
+workers.person['name'] = 'Ivan'
+workers.person['contact'][0]['phone'] = '+7-999-000-00-00'
 print(workers.is_valid(), '\n')
 # True
 
@@ -141,8 +140,6 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')   # Errors log:
-# {'person': {'VALUE': {'name': 'Ivan', 'years': 30, 'contact': [{'phone':
-# '+7-999-000-00-00'}, {'email': 'ivan@mail.ru', 'kind': 'personal'}],
-# 'address': {'city': 'Samara'}}, 'TYPE': typing.Union[__main__.Person,
-# typing.List[__main__.Person]], 'EXCEPTION': TypeError("__init__() got an
-# unexpected keyword argument 'years'")}}
+# {'person': [InstanceValidationError(instance_class=<class
+# '__main__.Person'>, errors=None, exception=TypeError("__init__() got
+# an unexpected keyword argument 'years'"))]}
