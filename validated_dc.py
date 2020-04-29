@@ -203,10 +203,12 @@ class InstanceValidation(BasicValidation):
                     self._replacement = instance
                     return True
                 else:
-                    self._field_errors = [
+                    self._field_errors.append(
                         InstanceValidationError(type_, errors, exception)
-                    ]
+                    )
                     return False
+            else:
+                return False
 
         return super()._is_instance(value, type_)
 
@@ -242,6 +244,11 @@ STR_ALIASES = {
 
 
 @dataclass
+class TypingValidationError:
+    exception: Exception
+
+
+@dataclass
 class ListValidationError:
     item_number: int
     item_value: Any
@@ -273,7 +280,10 @@ class TypingValidation(InstanceValidation):
                 return is_instance(value, type_)
             else:
                 error = '%s - not supported' % str_type
-                raise Exception(error)
+                self._field_errors.append(
+                    TypingValidationError(Exception(error))
+                )
+                return False
 
         return super()._is_instance(value, type_)
 
