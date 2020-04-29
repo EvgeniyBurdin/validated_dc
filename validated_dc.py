@@ -130,12 +130,14 @@ class BasicValidation:
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        errors = {'VALUE': self._field_value, 'TYPE': self._field_type}
+        errors = {
+            'VALUE': self._field_value,
+            'TYPE': self._field_type,
+            'ERRORS': self._field_errors
+        }
 
         if self._field_exception is not None:
             errors['EXCEPTION'] = self._field_exception
-        else:
-            errors['ERRORS'] = self._field_errors
 
         self._errors[self._field_name] = errors
 
