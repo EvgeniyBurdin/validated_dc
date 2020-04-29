@@ -99,7 +99,7 @@ person = {
     'name': 123,  # <- Error! Not str.
     'age': 30,
     'contact': [
-        {'phone': 123},  # <- Error! Not str.
+        {'phone': 999},  # <- Error! Not str.
         {'email': 'ivan@mail.ru', 'kind': 'personal'}
     ],
     'address': {'city': 'Samara'}
@@ -108,14 +108,16 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')  # Errors log:
-# {'person': [InstanceValidationError(instance_class=<class
-# '__main__.Person'>, errors={'name': [BasicValidationError(value=123,
-# annotation=<class 'str'>, exception=None)], 'contact':
-# [InstanceValidationError(instance_class=<class '__main__.Email'>,
+# {'person': [InstanceValidationError(instance_class=<class '__main__.Person'>
+# , errors={'name': [BasicValidationError(value=123, annotation=<class 'str'>,
+# exception=None)], 'contact': [InstanceValidationError(instance_class=
+# <class '__main__.Phone'>, errors={'phone': [BasicValidationError(value=999,
+#  annotation=<class 'str'>, exception=None)]}, exception=None),
+# InstanceValidationError(instance_class=<class '__main__.Email'>,
 # errors=None, exception=TypeError("__init__() got an unexpected keyword
-# argument 'mob'")), ListValidationError(item_number=0, item_value={'mob':
-# '+7-999-000-00-00'}, annotation=typing.Union[__main__.Phone,
-# __main__.Email])]}, exception=None)]}
+# argument 'phone'")), ListValidationError(item_number=0, item_value={'phone':
+#  999}, annotation=typing.Union[__main__.Phone, __main__.Email])]},
+# exception=None)]}
 
 # person - is still a dictionary
 # change the values to valid
@@ -140,6 +142,6 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')   # Errors log:
-# {'person': [InstanceValidationError(instance_class=<class
-# '__main__.Person'>, errors=None, exception=TypeError("__init__() got
-# an unexpected keyword argument 'years'"))]}
+# {'person': [InstanceValidationError(instance_class=<class '__main__.Person'>
+# , errors=None, exception=TypeError("__init__() got an unexpected keyword
+# argument 'years'"))]}
