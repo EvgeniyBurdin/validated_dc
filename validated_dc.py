@@ -13,15 +13,15 @@
         ValidatedDC, которые используются в аннотациях полей.
 
     @dataclass
-    class TypingValidation(DictReplaceableValidation):
+    class TypingValidation(InstanceValidation):
         Добавляет для использования в аннотациях некоторые алиасы из модуля
         typing, на данный момент это: List, Union, Optional, Any и Literal.
 
     @dataclass
-    class DictReplaceableValidation(BasicValidation):
+    class InstanceValidation(BasicValidation):
         Добавляет возможность при создании экземпляра использовать словарь,
         при инициализации значения поля, вместо экземпляра потомка
-        DictReplaceableValidation указанного в аннотации поля.
+        InstanceValidation указанного в аннотации поля.
         Это может пригодиться, например, при получении json-словаря по апи,
         для автоматической валидации значений.
         Так же, при этом, происходит замена словаря на экземпляр датакласса
@@ -156,18 +156,18 @@ class BasicValidation:
 
 
 @dataclass
-class DictReplaceableValidationError:
-    annotation: type
+class InstanceValidationError:
+    instance_class: type
     errors: Optional[dict]
     exception: Optional[Exception]
 
 
 @dataclass
-class DictReplaceableValidation(BasicValidation):
+class InstanceValidation(BasicValidation):
     """
         Добавляет возможность при создании экземпляра использовать словарь,
         при инициализации значения поля, вместо экземпляра потомка
-        DictReplaceableValidation указанного в аннотации поля.
+        InstanceValidation указанного в аннотации поля.
 
         Это может пригодиться, например, при получении json-словаря по апи,
         для автоматической валидации значений.
@@ -179,14 +179,14 @@ class DictReplaceableValidation(BasicValidation):
 
         super()._init_validation()
         # Флаг - выполнять замену словаря на экземпляр класса-потомка
-        # DictReplaceableValidation из аннотации поля (в случае пригодности
+        # InstanceValidation из аннотации поля (в случае пригодности
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
     def _is_instance(self, value: Any, type_: type) -> bool:
 
         is_type = type(type_) == type
-        if is_type and issubclass(type_, DictReplaceableValidation):
+        if is_type and issubclass(type_, InstanceValidation):
 
             if isinstance(value, dict) or isinstance(value, type_):
 
@@ -203,12 +203,9 @@ class DictReplaceableValidation(BasicValidation):
                     self._replacement = instance
                     return True
                 else:
-                    self._field_errors = [(
-                        DictReplaceableValidationError(
-                            annotation=type_,
-                            errors=errors, exception=exception
-                        )
-                    )]
+                    self._field_errors = [
+                        InstanceValidationError(type_, errors, exception)
+                    ]
                     return False
 
         return super()._is_instance(value, type_)
@@ -245,11 +242,6 @@ STR_ALIASES = {
 
 
 @dataclass
-class UnionValidationError:
-    annotation: type
-
-
-@dataclass
 class ListValidationError:
     item_number: int
     item_value: Any
@@ -263,7 +255,7 @@ class LiteralValidationError:
 
 
 @dataclass
-class TypingValidation(DictReplaceableValidation):
+class TypingValidation(InstanceValidation):
     """
         Добавляет для использования в аннотациях некоторые алиасы из модуля
         typing.
@@ -333,7 +325,6 @@ class TypingValidation(DictReplaceableValidation):
             if self._is_instance(value, item_type):
                 return True
         # Нет ни одного типа, подходящего для value
-        self._field_errors.append(UnionValidationError(type_))
         return False
 
     def _is_list_instance(self, value: Any, type_: type) -> bool:
