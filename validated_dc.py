@@ -43,6 +43,13 @@ from typing import Any, Callable, List, Literal, Optional, Union
 
 
 @dataclass
+class BasicValidationError:
+    value: Any
+    annotation: type
+    exception: Optional[Exception]
+
+
+@dataclass
 class BasicValidation:
     """
         Базовый валидируемый датакласс.
@@ -98,12 +105,15 @@ class BasicValidation:
         """
         try:
             result = isinstance(value, type_)
+            exception = None
         except Exception as ex:
-            self._field_exception = ex
+            exception = ex
             result = False
 
         if not result:
-            self._field_errors = [(value, type_), ]
+            self._field_errors.append(
+                BasicValidationError(value, type_, exception)
+            )
 
         return result
 
@@ -112,7 +122,6 @@ class BasicValidation:
             Инициализация валидации для текущего поля
         """
         self._field_errors = []
-        self._field_exception = None
         self._field_name = field.name
         self._field_value = getattr(self, field.name)
         self._field_type = field.type
@@ -130,12 +139,7 @@ class BasicValidation:
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        errors = {'ERRORS': self._field_errors}
-
-        if self._field_exception is not None:
-            errors['EXCEPTION'] = self._field_exception
-
-        self._errors[self._field_name] = errors
+        self._errors[self._field_name] = self._field_errors
 
     def _run_validation(self) -> None:
         """
@@ -149,6 +153,13 @@ class BasicValidation:
 
 
 # ----------------------------------------------------------------------------
+
+
+@dataclass
+class DictReplaceableValidationError:
+    annotation: type
+    errors: Optional[dict]
+    exception: Optional[Exception]
 
 
 @dataclass
@@ -181,17 +192,23 @@ class DictReplaceableValidation(BasicValidation):
 
                 value = asdict(value) if isinstance(value, type_) else value
                 try:
+                    exception = None
+                    errors = None
                     instance = type_(**value)
                     errors = instance.get_errors()
                 except Exception as ex:
-                    self._field_errors = [('***', ex), ]
-                    return False
+                    exception = ex
 
-                if errors is None:
+                if errors is None and exception is None:
                     self._replacement = instance
                     return True
                 else:
-                    self._field_errors = [{instance.__class__: errors}, ]
+                    self._field_errors = [(
+                        DictReplaceableValidationError(
+                            annotation=type_,
+                            errors=errors, exception=exception
+                        )
+                    )]
                     return False
 
         return super()._is_instance(value, type_)
@@ -225,6 +242,24 @@ STR_ALIASES = {
     Any: str(Any),
     Literal: str(Literal)
 }
+
+
+@dataclass
+class UnionValidationError:
+    annotation: type
+
+
+@dataclass
+class ListValidationError:
+    item_number: int
+    item_value: Any
+    annotation: type
+
+
+@dataclass
+class LiteralValidationError:
+    value: Any
+    annotation: type
 
 
 @dataclass
@@ -298,6 +333,7 @@ class TypingValidation(DictReplaceableValidation):
             if self._is_instance(value, item_type):
                 return True
         # Нет ни одного типа, подходящего для value
+        self._field_errors.append(UnionValidationError(type_))
         return False
 
     def _is_list_instance(self, value: Any, type_: type) -> bool:
@@ -326,8 +362,9 @@ class TypingValidation(DictReplaceableValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
-                    item_str = 'ITEM: %s' % i
-                    self._field_errors.append((item_str, item_value, type_))
+                    self._field_errors.append(
+                        ListValidationError(i, item_value, type_)
+                    )
                     return False
 
             # Все элементы списка value валидные.
@@ -346,7 +383,9 @@ class TypingValidation(DictReplaceableValidation):
         result = value in type_.__args__
 
         if not result:
-            self._field_errors = [(value, type_), ]
+            self._field_errors.append(
+                LiteralValidationError(value, type_)
+            )
 
         return result
 
