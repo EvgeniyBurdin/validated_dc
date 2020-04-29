@@ -103,7 +103,7 @@ class BasicValidation:
             result = False
 
         if not result:
-            self._field_errors.append((value, type_))
+            self._field_errors = [(value, type_), ]
 
         return result
 
@@ -130,11 +130,7 @@ class BasicValidation:
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        errors = {
-            'VALUE': self._field_value,
-            'TYPE': self._field_type,
-            'ERRORS': self._field_errors
-        }
+        errors = {'ERRORS': self._field_errors}
 
         if self._field_exception is not None:
             errors['EXCEPTION'] = self._field_exception
@@ -188,14 +184,14 @@ class DictReplaceableValidation(BasicValidation):
                     instance = type_(**value)
                     errors = instance.get_errors()
                 except Exception as ex:
-                    self._field_exception = ex
+                    self._field_errors = [('***', ex), ]
                     return False
 
                 if errors is None:
                     self._replacement = instance
                     return True
                 else:
-                    self._field_errors.append({instance.__class__: errors})
+                    self._field_errors = [{instance.__class__: errors}, ]
                     return False
 
         return super()._is_instance(value, type_)
@@ -247,12 +243,7 @@ class TypingValidation(DictReplaceableValidation):
 
             if self._is_supported_alias(str_type):
                 is_instance = self._get_alias_method(str_type)
-                result = is_instance(value, type_)
-                if result:
-                    return True
-                else:
-                    self._field_errors.append((value, type_))
-                    return False
+                return is_instance(value, type_)
             else:
                 error = '%s - not supported' % str_type
                 raise Exception(error)
@@ -325,7 +316,7 @@ class TypingValidation(DictReplaceableValidation):
 
             # У List допустимый тип стоит первым в кортеже __args__
             type_ = type_.__args__[0]
-            for item_value in value:
+            for i, item_value in enumerate(value):
                 if self._is_instance(item_value, type_):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
@@ -335,6 +326,8 @@ class TypingValidation(DictReplaceableValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
+                    item_str = 'ITEM: %s' % i
+                    self._field_errors.append((item_str, item_value, type_))
                     return False
 
             # Все элементы списка value валидные.
@@ -350,7 +343,12 @@ class TypingValidation(DictReplaceableValidation):
 
             Проверяет является ли value одним из type_.__args__
         """
-        return value in type_.__args__
+        result = value in type_.__args__
+
+        if not result:
+            self._field_errors = [(value, type_), ]
+
+        return result
 
     def _is_any_instance(self, value: Any, type_: type) -> bool:
         """
