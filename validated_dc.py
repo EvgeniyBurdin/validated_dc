@@ -300,7 +300,7 @@ class TypingValidation(InstanceValidation):
                 except Exception:
                     pass
 
-            exception = Exception('Alias is not supported!')
+            exception = TypeError('Alias is not supported!')
             self._field_errors.append(TypingValidationError(
                 value_repr=get_value_repr(value), value_type=type(value),
                 annotation=annotation, exception=exception
