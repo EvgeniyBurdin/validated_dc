@@ -47,7 +47,7 @@ class BasicValidationError:
     value_repr: str   # Строковое представление значения или его части
     value_type: type  # Тип значения
     annotation: type  # Тип в аннотации
-    exception: Optional[Exception] = None  # Исключение, если было
+    exception: Optional[Exception]  # Исключение, если было
 
 
 MAX_REPR = 30  # Максимальная длина строкового представления
@@ -143,7 +143,7 @@ class BasicValidation:
         self._field_errors = []
         self._field_name = field.name
         self._field_value = getattr(self, field.name)
-        self._field_type = field.type
+        self._field_annotation = field.type
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
         """
@@ -151,7 +151,7 @@ class BasicValidation:
         """
         self._init_field_validation(field)
 
-        return self._is_instance(self._field_value, self._field_type)
+        return self._is_instance(self._field_value, self._field_annotation)
 
     def _save_current_field_errors(self) -> None:
         """
@@ -175,10 +175,8 @@ class BasicValidation:
 
 
 @dataclass
-class InstanceValidationError:
-    instance_class: type
-    errors: Optional[dict]
-    exception: Optional[Exception]
+class InstanceValidationError(BasicValidationError):
+    errors: Optional[List]
 
 
 @dataclass
@@ -197,51 +195,51 @@ class InstanceValidation(BasicValidation):
     def _init_validation(self) -> None:
 
         super()._init_validation()
-        # Флаг - выполнять замену словаря на экземпляр класса-потомка
+
+        # Выполнять ли замену словаря на экземпляр класса-потомка
         # InstanceValidation из аннотации поля (в случае пригодности
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
-    def _is_instance(self, value: Any, type_: type) -> bool:
+    def _is_instance(self, value: Any, annotation: type) -> bool:
 
-        is_type = type(type_) == type
-        if is_type and issubclass(type_, InstanceValidation):
+        is_type = type(annotation) == type
+        if is_type and issubclass(annotation, InstanceValidation):
 
             exception = None
             errors = None
 
-            if isinstance(value, dict) or isinstance(value, type_):
+            if isinstance(value, dict) or isinstance(value, annotation):
 
-                value = asdict(value) if isinstance(value, type_) else value
+                if isinstance(value, annotation):
+                    value = asdict(value)
+
                 try:
-                    instance = type_(**value)
+                    instance = annotation(**value)
                     errors = instance.get_errors()
-                except Exception as ex:
-                    exception = ex
+                except Exception as exc:
+                    exception = exc
 
                 if errors is None and exception is None:
                     self._replacement = instance
                     return True
 
-            else:
-                exception = Exception(
-                    'The %s value %s is of the wrong type!' % (
-                        str(type(value)), str(value)[:20] + '...'
-                    )
-                )
-
             self._field_errors.append(
-                InstanceValidationError(type_, errors, exception)
+                InstanceValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=annotation, exception=exception, errors=errors
+                )
             )
             return False
 
-        return super()._is_instance(value, type_)
+        return super()._is_instance(value, annotation)
 
     def _init_field_validation(self, field: DataclassesField) -> None:
 
         super()._init_field_validation(field)
-        # Свойство для экземпляра предназначенного для замены словаря
-        self._replacement = False
+
+        # Свойство предназначенное для замены словаря
+        self._replacement = None
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
 
@@ -249,7 +247,7 @@ class InstanceValidation(BasicValidation):
 
         # Если включен флаг замены и валидация поля прошла успешно и
         # есть чем заменять, то установим новое значение у поля
-        if self._replace and result and self._replacement:
+        if self._replace and result and self._replacement is not None:
             setattr(self, self._field_name, self._replacement)
 
         return result
