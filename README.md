@@ -81,13 +81,13 @@ instance.bar[2].foo = '3'
 print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo='3')])
 print(instance.is_valid())  # False
 print(instance.get_errors())
-# {'bar': [InstanceValidationError(value_repr='[Foo(foo=1), Foo(foo=2), 
-# F...]', value_type=<class 'list'>, annotation=<class '__main__.Foo'>, 
+# {'bar': [InstanceValidationError(value_repr='[Foo(foo=1), Foo(foo=2),
+# F...]', value_type=<class 'list'>, annotation=<class '__main__.Foo'>,
 # exception=None, errors=None), InstanceValidationError(value_repr=
-# "{'foo': '3'}", value_type=<class 'dict'>, annotation=<class 
+# "{'foo': '3'}", value_type=<class 'dict'>, annotation=<class
 # '__main__.Foo'>, exception=None, errors={'foo': [BasicValidationError
-# (value_repr='3', value_type=<class 'str'>, annotation=<class 'int'>, 
-# exception=None)]}), ListValidationError(value_repr="Foo(foo='3')", 
-# value_type=<class '__main__.Foo'>, annotation=<class '__main__.Foo'>, 
+# (value_repr='3', value_type=<class 'str'>, annotation=<class 'int'>,
+# exception=None)]}), ListValidationError(value_repr="Foo(foo='3')",
+# value_type=<class '__main__.Foo'>, annotation=<class '__main__.Foo'>,
 # exception=None, item_index=2)]}
 ```
