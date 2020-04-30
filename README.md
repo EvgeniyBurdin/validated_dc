@@ -1,23 +1,49 @@
 # ValidatedDC
 
-Dataclass with data validation.
-Checks the value of its fields by their annotations.
+Dataclass with data validation. Checks the value of its fields by their annotations.
 
 ## Capabilities
 
 `ValidatedDC` is a regular Python dataclass, but with the ability to check the validity of the data by which this dataclass was initialized. Also, you can check the data at any time during the life of the instance.
 
 1. Support for standard and custom Python classes.
-2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`.
+2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`. These aliases can be embedded in each other.
 3. Replacing the `dict` with an instance of the `dataclass` from the field annotation (for example, when receiving data by api). If this behavior is not necessary, then the replacement can be disabled as follows:
 
-```python
-@dataclass
-class CustomValidatedDC(ValidatedDC):
-    def _init_validation(self) -> None:
-        super()._init_validation()
-        self._replace = False
-```
+    ```python
+    from dataclasses import dataclass
+    from validated_dc import ValidatedDC
+
+    @dataclass
+    class CustomValidatedDC(ValidatedDC):
+        def _init_validation(self) -> None:
+            super()._init_validation()
+            self._replace = False
+    ```
+
+4. You can still get the dictionary from the instance by applying `asdict()` to it:
+
+    ```python
+    from dataclasses import asdict, dataclass
+    from validated_dc import ValidatedDC
+
+    @dataclass
+    class Foo(ValidatedDC):
+        i: int
+        d: str = 'bar'
+
+    @dataclass
+    class MyValidatedDC(ValidatedDC):
+        foo: Foo
+
+    data = {'i': 1}
+    instance = MyValidatedDC(foo=data)
+    print(instance.get_errors())  # None
+    instance_dict = asdict(instance)
+    print(instance_dict)  # {'foo': {'i': 1, 'd': 'bar'}}
+    ```
+
+    You get valid data + default values.
 
 See detailed examples in `examples.py`.
 
