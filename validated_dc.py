@@ -44,9 +44,24 @@ from typing import Any, Callable, List, Literal, Optional, Union
 
 @dataclass
 class BasicValidationError:
-    value: Any
-    annotation: type
-    exception: Optional[Exception]
+    value_repr: str   # Строковое представление значения или его части
+    value_type: type  # Тип значения
+    annotation: type  # Тип в аннотации
+    exception: Optional[Exception] = None  # Исключение, если было
+
+
+MAX_REPR = 30  # Максимальная длина строкового представления
+
+
+def get_value_repr(value: Any) -> str:
+    """
+        Отдать строковое представление значения длиной не более MAX_REPR.
+    """
+    result = str(value)
+    if len(result) > MAX_REPR:
+        result = result[:MAX_REPR-4] + '...' + result[MAX_REPR-1]
+
+    return result
 
 
 @dataclass
@@ -99,22 +114,22 @@ class BasicValidation:
         """
         self._errors = {}
 
-    def _is_instance(self, value: Any, type_: type) -> bool:
+    def _is_instance(self, value: Any, ann: type) -> bool:
         """
             Проверка значения на соответствие типу.
         """
         try:
-            result = isinstance(value, type_)
+            result = isinstance(value, ann)
             exception = None
         except Exception as ex:
             exception = ex
             result = False
 
         if not result:
-            self._field_errors.append(
-                BasicValidationError(value, type_, exception)
-            )
-
+           # self._field_errors.append(
+           #     BasicValidationError(value, ann, exception)
+           # )
+            pass
         return result
 
     def _init_field_validation(self, field: DataclassesField) -> None:
@@ -455,6 +470,8 @@ class ValidatedDC(TypingValidation):
 
 
 if __name__ == "__main__":
+
+    print(get_value_repr(123456789012345678901234))
 
     @dataclass
     class SimpleInt(ValidatedDC):
