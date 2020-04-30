@@ -114,14 +114,14 @@ class BasicValidation:
         """
         self._errors = {}
 
-    def _is_instance(self, value: Any, ann: type) -> bool:
+    def _is_instance(self, value: Any, annotation: type) -> bool:
         """
             Проверка значения на соответствие типу.
         """
         exception = None
 
         try:
-            result = isinstance(value, ann)
+            result = isinstance(value, annotation)
         except Exception as exс:
             exception = exс
             result = False
@@ -130,7 +130,7 @@ class BasicValidation:
             self._field_errors.append(
                 BasicValidationError(
                     value_repr=get_value_repr(value), value_type=type(value),
-                    annotation=ann, exception=exception
+                    annotation=annotation, exception=exception
                 )
             )
 
