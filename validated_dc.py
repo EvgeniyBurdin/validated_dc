@@ -188,12 +188,13 @@ class InstanceValidation(BasicValidation):
         is_type = type(type_) == type
         if is_type and issubclass(type_, InstanceValidation):
 
+            exception = None
+            errors = None
+
             if isinstance(value, dict) or isinstance(value, type_):
 
                 value = asdict(value) if isinstance(value, type_) else value
                 try:
-                    exception = None
-                    errors = None
                     instance = type_(**value)
                     errors = instance.get_errors()
                 except Exception as ex:
@@ -202,11 +203,18 @@ class InstanceValidation(BasicValidation):
                 if errors is None and exception is None:
                     self._replacement = instance
                     return True
-                else:
-                    self._field_errors = [
-                        InstanceValidationError(type_, errors, exception)
-                    ]
-                    return False
+
+            else:
+                exception = Exception(
+                    'The %s value %s is of the wrong type!' % (
+                        str(type(value)), str(value)[:20] + '...'
+                    )
+                )
+
+            self._field_errors.append(
+                InstanceValidationError(type_, errors, exception)
+            )
+            return False
 
         return super()._is_instance(value, type_)
 
@@ -242,6 +250,11 @@ STR_ALIASES = {
 
 
 @dataclass
+class TypingValidationError:
+    exception: Exception
+
+
+@dataclass
 class ListValidationError:
     item_number: int
     item_value: Any
@@ -273,7 +286,10 @@ class TypingValidation(InstanceValidation):
                 return is_instance(value, type_)
             else:
                 error = '%s - not supported' % str_type
-                raise Exception(error)
+                self._field_errors.append(
+                    TypingValidationError(Exception(error))
+                )
+                return False
 
         return super()._is_instance(value, type_)
 
