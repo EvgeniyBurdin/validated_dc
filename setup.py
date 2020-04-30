@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='validated-dc',
-    version='0.3',
+    version='0.3.1',
     license='BSD',
     author='Evgeniy Burdin',
     author_email='e.s.burdin@mail.ru',

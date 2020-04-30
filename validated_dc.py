@@ -44,9 +44,24 @@ from typing import Any, Callable, List, Literal, Optional, Union
 
 @dataclass
 class BasicValidationError:
-    value: Any
-    annotation: type
-    exception: Optional[Exception]
+    value_repr: str   # Строковое представление значения или его части
+    value_type: type  # Тип значения
+    annotation: type  # Тип в аннотации
+    exception: Optional[Exception]  # Исключение, если было
+
+
+MAX_REPR = 30  # Максимальная длина строкового представления
+
+
+def get_value_repr(value: Any) -> str:
+    """
+        Отдать строковое представление значения длиной не более MAX_REPR.
+    """
+    result = str(value)
+    if len(result) > MAX_REPR:
+        result = result[:MAX_REPR-4] + '...' + result[-1]
+
+    return result
 
 
 @dataclass
@@ -99,21 +114,23 @@ class BasicValidation:
         """
         self._errors = {}
 
-    def _is_instance(self, value: Any, type_: type) -> bool:
+    def _is_instance(self, value: Any, annotation: type) -> bool:
         """
             Проверка значения на соответствие типу.
         """
+        exception = None
+
         try:
-            result = isinstance(value, type_)
-            exception = None
-        except Exception as ex:
-            exception = ex
+            result = isinstance(value, annotation)
+        except Exception as exс:
+            exception = exс
             result = False
 
         if not result:
-            self._field_errors.append(
-                BasicValidationError(value, type_, exception)
-            )
+            self._field_errors.append(BasicValidationError(
+                value_repr=get_value_repr(value), value_type=type(value),
+                annotation=annotation, exception=exception
+            ))
 
         return result
 
@@ -124,7 +141,7 @@ class BasicValidation:
         self._field_errors = []
         self._field_name = field.name
         self._field_value = getattr(self, field.name)
-        self._field_type = field.type
+        self._field_annotation = field.type
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
         """
@@ -132,7 +149,7 @@ class BasicValidation:
         """
         self._init_field_validation(field)
 
-        return self._is_instance(self._field_value, self._field_type)
+        return self._is_instance(self._field_value, self._field_annotation)
 
     def _save_current_field_errors(self) -> None:
         """
@@ -156,10 +173,8 @@ class BasicValidation:
 
 
 @dataclass
-class InstanceValidationError:
-    instance_class: type
-    errors: Optional[dict]
-    exception: Optional[Exception]
+class InstanceValidationError(BasicValidationError):
+    errors: Optional[List]
 
 
 @dataclass
@@ -178,51 +193,49 @@ class InstanceValidation(BasicValidation):
     def _init_validation(self) -> None:
 
         super()._init_validation()
-        # Флаг - выполнять замену словаря на экземпляр класса-потомка
+
+        # Выполнять ли замену словаря на экземпляр класса-потомка
         # InstanceValidation из аннотации поля (в случае пригодности
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
-    def _is_instance(self, value: Any, type_: type) -> bool:
+    def _is_instance(self, value: Any, annotation: type) -> bool:
 
-        is_type = type(type_) == type
-        if is_type and issubclass(type_, InstanceValidation):
+        is_type = type(annotation) == type
+        if is_type and issubclass(annotation, InstanceValidation):
 
             exception = None
             errors = None
 
-            if isinstance(value, dict) or isinstance(value, type_):
+            if isinstance(value, dict) or isinstance(value, annotation):
 
-                value = asdict(value) if isinstance(value, type_) else value
+                if isinstance(value, annotation):
+                    value = asdict(value)
+
                 try:
-                    instance = type_(**value)
+                    instance = annotation(**value)
                     errors = instance.get_errors()
-                except Exception as ex:
-                    exception = ex
+                except Exception as exc:
+                    exception = exc
 
                 if errors is None and exception is None:
                     self._replacement = instance
                     return True
 
-            else:
-                exception = Exception(
-                    'The %s value %s is of the wrong type!' % (
-                        str(type(value)), str(value)[:20] + '...'
-                    )
-                )
-
-            self._field_errors.append(
-                InstanceValidationError(type_, errors, exception)
-            )
+            self._field_errors.append(InstanceValidationError(
+                value_repr=get_value_repr(value), value_type=type(value),
+                annotation=annotation, exception=exception, errors=errors
+            ))
             return False
 
-        return super()._is_instance(value, type_)
+        return super()._is_instance(value, annotation)
 
     def _init_field_validation(self, field: DataclassesField) -> None:
 
         super()._init_field_validation(field)
-        # Свойство для экземпляра предназначенного для замены словаря
-        self._replacement = False
+
+        # Свойство предназначенное для замены словаря
+        self._replacement = None
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
 
@@ -230,7 +243,7 @@ class InstanceValidation(BasicValidation):
 
         # Если включен флаг замены и валидация поля прошла успешно и
         # есть чем заменять, то установим новое значение у поля
-        if self._replace and result and self._replacement:
+        if self._replace and result and self._replacement is not None:
             setattr(self, self._field_name, self._replacement)
 
         return result
@@ -250,21 +263,18 @@ STR_ALIASES = {
 
 
 @dataclass
-class TypingValidationError:
-    exception: Exception
+class TypingValidationError(BasicValidationError):
+    pass
 
 
 @dataclass
-class ListValidationError:
-    item_number: int
-    item_value: Any
-    annotation: type
+class ListValidationError(BasicValidationError):
+    item_index: int
 
 
 @dataclass
-class LiteralValidationError:
-    value: Any
-    annotation: type
+class LiteralValidationError(BasicValidationError):
+    pass
 
 
 @dataclass
@@ -275,79 +285,85 @@ class TypingValidation(InstanceValidation):
 
         Поддерживаемые алиасы перечислены в константе STR_ALIASES.
     """
-    def _is_instance(self, value: Any, type_: type) -> bool:
+    def _is_instance(self, value: Any, annotation: type) -> bool:
 
-        str_type = str(type_)
+        str_annotation = str(annotation)
 
-        if self._is_typing_alias(str_type):
+        if self._is_typing_alias(str_annotation):
 
-            if self._is_supported_alias(str_type):
-                is_instance = self._get_alias_method(str_type)
-                return is_instance(value, type_)
-            else:
-                error = '%s - not supported' % str_type
-                self._field_errors.append(
-                    TypingValidationError(Exception(error))
-                )
-                return False
+            if self._is_supported_alias(str_annotation):
 
-        return super()._is_instance(value, type_)
+                is_instance = self._get_alias_method(str_annotation)
+
+                try:
+                    return is_instance(value, annotation)
+                except Exception:
+                    pass
+
+            exception = TypeError('Alias is not supported!')
+            self._field_errors.append(TypingValidationError(
+                value_repr=get_value_repr(value), value_type=type(value),
+                annotation=annotation, exception=exception
+            ))
+            return False
+
+        return super()._is_instance(value, annotation)
 
     @staticmethod
-    def _is_typing_alias(type_: str) -> bool:
+    def _is_typing_alias(annotation: str) -> bool:
         """
-            Проверяет является ли type_ алиасом из модуля typing
+            Проверяет является ли annotation алиасом из модуля typing
         """
         str_alias = list(STR_ALIASES.values())[0]
         prefix = str_alias[:str_alias.find('.')]
-        return type_.startswith(prefix)
+        return annotation.startswith(prefix)
 
     @staticmethod
-    def _is_supported_alias(type_: str) -> bool:
+    def _is_supported_alias(annotation: str) -> bool:
         """
-            Проверяет является ли type_ поддерживаемым алиасом
+            Проверяет является ли annotation поддерживаемым алиасом
         """
         for str_alias in STR_ALIASES.values():
-            if type_.startswith(str_alias):
+            if annotation.startswith(str_alias):
                 return True
         return False
 
-    def _get_alias_method(self, type_: str) -> Optional[Callable]:
+    def _get_alias_method(self, annotation: str) -> Optional[Callable]:
         """
             Возавращает метод для проверки алиаса
         """
 
-        if type_.startswith(STR_ALIASES[Union]):
+        if annotation.startswith(STR_ALIASES[Union]):
             return self._is_union_instance
 
-        elif type_.startswith(STR_ALIASES[List]):
+        elif annotation.startswith(STR_ALIASES[List]):
             return self._is_list_instance
 
-        elif type_.startswith(STR_ALIASES[Literal]):
+        elif annotation.startswith(STR_ALIASES[Literal]):
             return self._is_literal_instance
 
-        elif type_.startswith(STR_ALIASES[Any]):
+        elif annotation.startswith(STR_ALIASES[Any]):
             return self._is_any_instance
 
-    def _is_union_instance(self, value: Any, type_: type) -> bool:
+    def _is_union_instance(self, value: Any, annotation: type) -> bool:
         """
             Валидация на алиасы Optional и Union.
 
             Проверяет является ли value экземпляром одного из типов из
-            кортежа type_.__args__
+            кортежа.
         """
         # У Union допустимые типы перечислены в кортеже __args__
-        for item_type in type_.__args__:
-            if self._is_instance(value, item_type):
+        for item_annotation in annotation.__args__:
+            if self._is_instance(value, item_annotation):
                 return True
         # Нет ни одного типа, подходящего для value
         return False
 
-    def _is_list_instance(self, value: Any, type_: type) -> bool:
+    def _is_list_instance(self, value: Any, annotation: type) -> bool:
         """
             Валидация на алиас List.
 
-            Проверяет является ли value списком экземпляров type_.
+            Проверяет является ли value списком экземпляров annotation.
         """
         if isinstance(value, list):
             # Имеем дело со списком. В родительском классе возможна замена
@@ -358,9 +374,9 @@ class TypingValidation(InstanceValidation):
             new_value = []
 
             # У List допустимый тип стоит первым в кортеже __args__
-            type_ = type_.__args__[0]
+            annotation = annotation.__args__[0]
             for i, item_value in enumerate(value):
-                if self._is_instance(item_value, type_):
+                if self._is_instance(item_value, annotation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
@@ -369,9 +385,11 @@ class TypingValidation(InstanceValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
-                    self._field_errors.append(
-                        ListValidationError(i, item_value, type_)
-                    )
+                    self._field_errors.append(ListValidationError(
+                            value_repr=get_value_repr(item_value),
+                            value_type=type(item_value), item_index=i,
+                            annotation=annotation, exception=None
+                    ))
                     return False
 
             # Все элементы списка value валидные.
@@ -379,20 +397,25 @@ class TypingValidation(InstanceValidation):
             return True
         else:
             # Значение поля - не список, а это ошибка валидации
+            self._field_errors.append(BasicValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=annotation, exception=None
+            ))
             return False
 
-    def _is_literal_instance(self, value: Any, type_: type) -> bool:
+    def _is_literal_instance(self, value: Any, annotation: type) -> bool:
         """
             Валидация на алиас Literal.
 
-            Проверяет является ли value одним из type_.__args__
+            Проверяет является ли value одним из annotation.__args__
         """
-        result = value in type_.__args__
+        result = value in annotation.__args__
 
         if not result:
-            self._field_errors.append(
-                LiteralValidationError(value, type_)
-            )
+            self._field_errors.append(LiteralValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=annotation, exception=None
+            ))
 
         return result
 
@@ -455,6 +478,8 @@ class ValidatedDC(TypingValidation):
 
 
 if __name__ == "__main__":
+
+    print(get_value_repr(123456789012345678901234))
 
     @dataclass
     class SimpleInt(ValidatedDC):

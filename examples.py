@@ -108,15 +108,27 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')  # Errors log:
-# {'person': [InstanceValidationError(instance_class=<class '__main__.Person'>
-# , errors={'name': [BasicValidationError(value=123, annotation=<class 'str'>,
-# exception=None)], 'contact': [InstanceValidationError(instance_class=
-# <class '__main__.Phone'>, errors={'phone': [BasicValidationError(value=999,
-#  annotation=<class 'str'>, exception=None)]}, exception=None),
-# InstanceValidationError(instance_class=<class '__main__.Email'>,
-# errors=None, exception=TypeError("__init__() got an unexpected keyword
-# argument 'phone'")), ListValidationError(item_number=0, item_value={'phone':
-#  999}, annotation=typing.Union[__main__.Phone, __main__.Email])]},
+# {'person': [InstanceValidationError(value_repr="{'name': 123, 'age':
+# 30, '...}", value_type=<class 'dict'>, annotation=<class '__main__.Person'>,
+#  exception=None, errors={'name': [BasicValidationError(value_repr='123',
+# value_type=<class 'int'>, annotation=<class 'str'>, exception=None)],
+# 'contact': [InstanceValidationError(value_repr="[{'phone': 999},
+# {'email':...]", value_type=<class 'list'>,
+# annotation=<class '__main__.Phone'>, exception=None, errors=None),
+# InstanceValidationError(value_repr="[{'phone': 999}, {'email':...]",
+# value_type=<class 'list'>, annotation=<class '__main__.Email'>,
+# exception=None, errors=None), InstanceValidationError(value_repr=
+# "{'phone': 999}", value_type=<class 'dict'>, annotation=
+# <class '__main__.Phone'>, exception=None, errors={'phone':
+# [BasicValidationError(value_repr='999', value_type=<class 'int'>,
+# annotation=<class 'str'>, exception=None)]}), InstanceValidationError(
+# value_repr="{'phone': 999}", value_type=<class 'dict'>, annotation=
+# <class '__main__.Email'>, exception=TypeError("__init__() got an unexpected
+# keyword argument 'phone'"), errors=None), ListValidationError(value_repr=
+# "{'phone': 999}", value_type=<class 'dict'>, annotation=typing.Union[
+# __main__.Phone, __main__.Email], exception=None, item_index=0)]}),
+# BasicValidationError(value_repr="{'name': 123, 'age': 30, '...}",
+# value_type=<class 'dict'>, annotation=typing.List[__main__.Person],
 # exception=None)]}
 
 # person - is still a dictionary
@@ -142,6 +154,9 @@ person = {
 workers = Workers(person=person)
 
 print(workers.get_errors(), '\n')   # Errors log:
-# {'person': [InstanceValidationError(instance_class=<class '__main__.Person'>
-# , errors=None, exception=TypeError("__init__() got an unexpected keyword
-# argument 'years'"))]}
+# {'person': [InstanceValidationError(value_repr="{'name': 'Ivan',
+# 'years': ...}", value_type=<class 'dict'>, annotation=<class
+# '__main__.Person'>, exception=TypeError("__init__() got an unexpected
+# keyword argument 'years'"), errors=None), BasicValidationError(value_repr=
+# "{'name': 'Ivan', 'years': ...}", value_type=<class 'dict'>,
+# annotation=typing.List[__main__.Person], exception=None)]}
