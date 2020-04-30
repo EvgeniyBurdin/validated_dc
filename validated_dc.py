@@ -59,7 +59,7 @@ def get_value_repr(value: Any) -> str:
     """
     result = str(value)
     if len(result) > MAX_REPR:
-        result = result[:MAX_REPR-4] + '...' + result[MAX_REPR-1]
+        result = result[:MAX_REPR-4] + '...' + result[-1]
 
     return result
 
