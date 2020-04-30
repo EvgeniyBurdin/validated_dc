@@ -1,3 +1,4 @@
+import copy
 from dataclasses import dataclass
 
 from validated_dc import BasicValidation
@@ -38,7 +39,7 @@ def test_basic_validation_valid():
 
 def test_basic_validation_not_valid():
 
-    nocorrect_input = correct_input
+    nocorrect_input = copy.copy(correct_input)
     nocorrect_input['s'] = 2
     nocorrect_input['cc'] = 5
 
@@ -68,3 +69,27 @@ def test__post_init__():
 
     instance = FakeBasicValidation()
     assert instance.validation_run
+
+
+def test_get_errors():
+
+    instance = Foo(**correct_input)
+    assert instance.get_errors() is None
+
+    nocorrect_input = copy.copy(correct_input)
+    nocorrect_input['s'] = 2
+    nocorrect_input['cc'] = 5
+    instance = Foo(**nocorrect_input)
+    assert instance._errors == instance.get_errors()
+
+
+def test_is_valid():
+
+    instance = Foo(**correct_input)
+    assert instance.is_valid()
+
+    nocorrect_input = copy.copy(correct_input)
+    nocorrect_input['s'] = 2
+    nocorrect_input['cc'] = 5
+    instance = Foo(**nocorrect_input)
+    assert not instance.is_valid()
