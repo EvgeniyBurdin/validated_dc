@@ -118,18 +118,22 @@ class BasicValidation:
         """
             Проверка значения на соответствие типу.
         """
+        exception = None
+
         try:
             result = isinstance(value, ann)
-            exception = None
-        except Exception as ex:
-            exception = ex
+        except Exception as exс:
+            exception = exс
             result = False
 
         if not result:
-           # self._field_errors.append(
-           #     BasicValidationError(value, ann, exception)
-           # )
-            pass
+            self._field_errors.append(
+                BasicValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=ann, exception=exception
+                )
+            )
+
         return result
 
     def _init_field_validation(self, field: DataclassesField) -> None:
