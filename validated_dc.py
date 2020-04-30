@@ -386,9 +386,9 @@ class TypingValidation(InstanceValidation):
                     new_value.append(item_value)
                 else:
                     self._field_errors.append(ListValidationError(
-                            value_repr=get_value_repr(item_value),
-                            value_type=type(item_value), item_index=i,
-                            annotation=annotation, exception=None
+                        value_repr=get_value_repr(item_value),
+                        value_type=type(item_value), item_index=i,
+                        annotation=annotation, exception=None
                     ))
                     return False
 
@@ -398,8 +398,8 @@ class TypingValidation(InstanceValidation):
         else:
             # Значение поля - не список, а это ошибка валидации
             self._field_errors.append(BasicValidationError(
-                    value_repr=get_value_repr(value), value_type=type(value),
-                    annotation=annotation, exception=None
+                value_repr=get_value_repr(value), value_type=type(value),
+                annotation=annotation, exception=None
             ))
             return False
 
@@ -413,8 +413,8 @@ class TypingValidation(InstanceValidation):
 
         if not result:
             self._field_errors.append(LiteralValidationError(
-                    value_repr=get_value_repr(value), value_type=type(value),
-                    annotation=annotation, exception=None
+                value_repr=get_value_repr(value), value_type=type(value),
+                annotation=annotation, exception=None
             ))
 
         return result
