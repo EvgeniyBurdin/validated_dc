@@ -269,7 +269,7 @@ class TypingValidationError(BasicValidationError):
 
 @dataclass
 class ListValidationError(BasicValidationError):
-    item_number: int
+    item_index: int
 
 
 @dataclass
@@ -386,9 +386,9 @@ class TypingValidation(InstanceValidation):
                     new_value.append(item_value)
                 else:
                     self._field_errors.append(ListValidationError(
-                            item_number=i, value_repr=get_value_repr(value),
-                            value_type=type(value), annotation=annotation,
-                            exception=None
+                            value_repr=get_value_repr(item_value),
+                            value_type=type(item_value), item_index=i,
+                            annotation=annotation, exception=None
                     ))
                     return False
 
