@@ -93,3 +93,15 @@ def test_is_valid():
     nocorrect_input['cc'] = 5
     instance = Foo(**nocorrect_input)
     assert not instance.is_valid()
+
+
+def test_init_validation():
+
+    @dataclass
+    class CheckInit(BasicValidation):
+        def _init_validation(self):
+            super()._init_validation()
+            self._check_init_errors = self._errors
+
+    instance = CheckInit()
+    assert instance._check_init_errors == {}
