@@ -54,7 +54,7 @@ def test_init_field_validation():
     # Вызовем метод
     instance._init_field_validation(field)
 
-    # Значение у _replace должно вновь стать None
+    # Значение у _replacement должно вновь стать None
     assert instance._replacement is None
 
 
