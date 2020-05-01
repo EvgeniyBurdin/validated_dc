@@ -250,5 +250,5 @@ def test_save_current_field_errors():
     instance._save_current_field_errors()
 
     # Словарь ошибок должен иметь ключ с именем поля и
-    # значением из списка ошибок
+    # значением равным списку ошибок
     assert instance._errors[instance._field_name] == instance._field_errors
