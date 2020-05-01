@@ -1,7 +1,7 @@
 import copy
 from dataclasses import dataclass, fields
 
-from validated_dc import BasicValidation
+from validated_dc import BasicValidation, get_value_repr
 
 
 class СustomСlass:
@@ -326,3 +326,16 @@ def test_run_validation_call_save_current_field_errors():
 
     # В словаре ошибок должен появиться ключ с именем этого поля
     assert instance._errors['i']
+
+
+def test_get_value_repr():
+    """
+        Тест утилиты get_value_repr()
+    """
+    v1 = 12345
+    v1_repr = '12345'
+    assert get_value_repr(v1) == v1_repr
+
+    v2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
+    v2_repr = '[1, 2, 3, 4, 5, 6, 7, 8, 9...]'
+    assert get_value_repr(v2) == v2_repr
