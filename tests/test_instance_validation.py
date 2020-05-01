@@ -13,6 +13,72 @@ class Bar(InstanceValidation):
     foo: Foo
 
 
+def test_is_instance_true():
+    """
+        Тест метода self._is_instance() когда он возвращает True
+    """
+    # Создадим произвольный экземпляр InstanceValidation
+    @dataclass
+    class MyInstanceValidation(InstanceValidation):
+        # Значение по умолчанию указано для возможности создать экземпляр при
+        # старте теста
+        bar: Bar = None
+
+    instance = MyInstanceValidation()
+
+    # У этого экземпляра есть поле bar с аннотацией Bar
+    annotation = Bar
+
+    # Тогда, проверка валидности поля со следующими значеними
+    # должна вернуть True:
+
+    value = {'foo': {'i': 1}}
+    assert instance._is_instance(value, annotation)
+
+    value = Bar(foo={'i': 1})
+    assert instance._is_instance(value, annotation)
+
+    value = Bar(foo=Foo(i=1))
+    assert instance._is_instance(value, annotation)
+
+
+def test_is_instance_false():
+    """
+        Тест метода self._is_instance() когда он возвращает False
+    """
+    # Создадим произвольный экземпляр InstanceValidation
+    @dataclass
+    class MyInstanceValidation(InstanceValidation):
+        # Значение по умолчанию указано для возможности создать экземпляр при
+        # старте теста
+        bar: Bar = None
+
+    instance = MyInstanceValidation()
+
+    # У этого экземпляра есть поле bar с аннотацией Bar
+    annotation = Bar
+
+    # Тогда, проверка валидности поля со следующими значеними
+    # должна вернуть False:
+
+    value = {'foo': {'i': '1'}}    # Неверный тип значение у вложенного поля i
+    assert not instance._is_instance(value, annotation)
+
+    value = {'foo': {'i_x': 1}}    # Отсутствующее имя i_x в классе Foo
+    assert not instance._is_instance(value, annotation)
+
+    value = Bar(foo={'i': [1, ]})  # Неверный тип значение у вложенного поля i
+    assert not instance._is_instance(value, annotation)
+
+    value = Bar(foo=1)             # Неверный тип значение у поля foo
+    assert not instance._is_instance(value, annotation)
+
+    value = {'foo_x': {'i': 1}}  # Отсутствующее имя foo_x в классе Bar
+    assert not instance._is_instance(value, annotation)
+
+    # ... и т.п.
+
+
 def test_init_validation():
     """
         Тест инициализации свойст для валидации экземпляра.
@@ -21,7 +87,7 @@ def test_init_validation():
     # свойствам родителя, свойство self._replace инициализируется
     # значением True.
 
-    # Создадим произвольный экземпляр
+    # Создадим произвольный экземпляр потомка InstanceValidation
     instance = Foo(i=1)
 
     # Для теста, изменим значение поля на любое, отличное от True
@@ -42,7 +108,7 @@ def test_init_field_validation():
     # свойствам родителя, свойство self._replacement инициализируется
     # значением None.
 
-    # Создадим произвольный экземпляр
+    # Создадим произвольный экземпляр потомка InstanceValidation
     instance = Foo(i=1)
 
     # Для теста, изменим значение поля на любое, отличное от None
