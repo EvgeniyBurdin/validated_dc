@@ -303,3 +303,26 @@ def test_run_validation_call_is_field_valid():
     # is_field_valid(field).
     # И сейчас _field___names должен содержать список имен всех полей
     assert instance._field___names == ['i', 's']
+
+
+def test_run_validation_call_save_current_field_errors():
+    """
+        Тест записи ошибки поля (если она есть) при старте валидации
+    """
+    # Возьмем валидный экземпляр
+    instance = Foo(**correct_input)
+
+    # Возьмем валидный экземпляр
+    instance = Foo(**correct_input)
+
+    # Его словарь ошибок должен быть пустой
+    assert instance._errors == {}
+
+    # Изменим значение одного из полей на невалидное
+    instance.i = 's'
+
+    # Запустим _run_validation()
+    instance._run_validation()
+
+    # В словаре ошибок должен появиться ключ с именем этого поля
+    assert instance._errors['i']
