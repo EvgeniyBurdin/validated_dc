@@ -252,3 +252,54 @@ def test_save_current_field_errors():
     # Словарь ошибок должен иметь ключ с именем поля и
     # значением равным списку ошибок
     assert instance._errors[instance._field_name] == instance._field_errors
+
+
+def test_run_validation_call_init_validation():
+    """
+        Тест вызова инициализации валидации при старте валидации
+    """
+    @dataclass
+    class FakeBasicValidation(BasicValidation):
+        """
+            Подменим метод инициализации валидаци
+        """
+        def _init_validation(self):
+            self._init_validation__succes = True  # Установим маркер
+
+    instance = FakeBasicValidation()
+    instance._init_validation__succes = False
+    instance._run_validation()
+
+    assert instance._init_validation__succes
+
+
+def test_run_validation_call_is_field_valid():
+    """
+        Тест вызова валидации всех полей при старте валидации
+    """
+    @dataclass
+    class FakeBasicValidation(BasicValidation):
+        """
+            Подменим метод валидаци всех полей
+        """
+        i: int
+        s: str
+
+        def __post_init__(self):
+            self._field___names = []  # Создадим поле для проверки
+
+        def _is_field_valid(self, field):
+            """
+                Фейковый метод валидации поля, просто сохраняет имя каждого
+                полученного поля.
+            """
+            self._field___names.append(field.name)
+            return True
+
+    instance = FakeBasicValidation(i=1, s='2')
+    instance._run_validation()
+
+    # _run_validation должна "пройтись" по всем полям и вызвать
+    # is_field_valid(field).
+    # И сейчас _field___names должен содержать список имен всех полей
+    assert instance._field___names == ['i', 's']
