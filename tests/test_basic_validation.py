@@ -22,7 +22,6 @@ class Foo(BasicValidation):
     i: int
     s: str
     l: list
-    # ... You can use all other standard python classes.
     cc: СustomСlass
 
 
@@ -134,11 +133,12 @@ def test_is_instance_true():
 
     custom_class_instance = СustomСlass()
 
+    # Кортеж из значений всех (вроде :) ) стандартных типов Python и пары
+    # пользовательских классов
     values = (
         None, True, 0.1, 1, complex(3, 4), set([5, ]), frozenset('7'),
         (7, 8), [9, ], {11: 12},
-        custom_class_instance, custom_class_instance.method,
-        instance, instance.is_valid
+        custom_class_instance, custom_class_instance.method, instance
     )
 
     data = {type(value): value for value in values}
@@ -157,10 +157,12 @@ def test_is_instance_false():
 
     custom_class_instance = СustomСlass()
 
+    # Кортеж из значений всех (вроде :) ) стандартных типов Python и пары
+    # пользовательских классов
     values = (
         None, True, 0.1, 1, '2', complex(3, 4), set([5, ]), frozenset('7'),
         (7, 8), [9, ], {11: 12},
-        custom_class_instance, custom_class_instance.method
+        custom_class_instance, custom_class_instance.method, instance,
     )
 
     data = {type(value): value for value in values}
@@ -174,7 +176,7 @@ def test_is_instance_false():
         assert not instance._is_instance(value, type_)
 
     # Ошибки были при проверке каждой items из data,
-    # то есть - длины списков должны быть равны
+    # таким образом - длины списков должны быть равны
     assert len(instance._field_errors) == len(values)
 
 
