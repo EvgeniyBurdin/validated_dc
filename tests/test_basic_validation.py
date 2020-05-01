@@ -5,7 +5,9 @@ from validated_dc import BasicValidation
 
 
 class СustomСlass:
-
+    """
+        Пользовательский класс
+    """
     foo = 'foo'
 
     def method(self):
@@ -14,13 +16,16 @@ class СustomСlass:
 
 @dataclass
 class Foo(BasicValidation):
+    """
+        Датакласс с валидацией для использования в тестах
+    """
     i: int
     s: str
     l: list
     # ... You can use all other standard python classes.
     cc: СustomСlass
 
-
+# Корректные данные для создания экземпляра Foo
 correct_input = {
     'i': 1,
     's': '2',
@@ -30,7 +35,9 @@ correct_input = {
 
 
 def test_basic_validation_valid():
-
+    """
+        Тест отсутствия ошибок у валидного класса
+    """
     instance = Foo(**correct_input)
 
     assert instance.get_errors() is None
@@ -38,14 +45,16 @@ def test_basic_validation_valid():
 
 
 def test_basic_validation_not_valid():
-
+    """
+        Тест наличия ошибок у НЕ валидного класса
+    """
     nocorrect_input = copy.copy(correct_input)
     nocorrect_input['s'] = 2
     nocorrect_input['cc'] = 5
 
     instance = Foo(**nocorrect_input)
 
-    # Есть ошибки в данных
+    # В полях датакласса есть ошибки
     assert instance.get_errors()
     assert not instance.is_valid()
 
@@ -65,14 +74,18 @@ def test__post_init__():
             Подменим метод старта валидаци
         """
         def _run_validation(self):
-            self._validation__started = True
+            self._validation__started = True  # Установим маркер
 
     instance = FakeBasicValidation()
+    # Проверим наличие маркера
     assert instance._validation__started
 
 
 def test_get_errors():
-
+    """
+       get_errors() должна вернуть None если все поля валидны, или список
+       ошибок у полей.
+    """
     instance = Foo(**correct_input)
     assert instance.get_errors() is None
 
@@ -80,23 +93,28 @@ def test_get_errors():
     nocorrect_input['s'] = 2
     nocorrect_input['cc'] = 5
     instance = Foo(**nocorrect_input)
+    #  Список ошибок хранится в приватном поле instance._errors
     assert instance._errors == instance.get_errors()
 
 
 def test_is_valid():
+    """
+        is_valid() должен запустить валидацию и вернуть True если ошибок нет,
+        или False если они есть.
+    """
 
     instance = Foo(**correct_input)
     assert instance.is_valid()
 
-    nocorrect_input = copy.copy(correct_input)
-    nocorrect_input['s'] = 2
-    nocorrect_input['cc'] = 5
-    instance = Foo(**nocorrect_input)
+    instance.s = 5  # Присвоим полю невалидное значение
     assert not instance.is_valid()
 
 
 def test_init_validation():
-
+    """
+        Тест создания и инициализации свойст необходимых для валидации.
+        (в данном случае только одно свойство - self._errors)
+    """
     # Возьмем произвольный экземпляр
     instance = Foo(**correct_input)
 
@@ -105,7 +123,9 @@ def test_init_validation():
 
 
 def test_is_instance_true():
-
+    """
+        Тест успешной работы метода self.is_instance() (возвращает True)
+    """
     # Возьмем произвольный экземпляр
     instance = Foo(**correct_input)
 
@@ -121,11 +141,14 @@ def test_is_instance_true():
     data = {type(value): value for value in values}
 
     for type_, value in data.items():
+        # Все проверки должны вернуть True
         assert instance._is_instance(value, type_)
 
 
 def test_is_instance_false():
-
+    """
+        Тест НЕ успешной работы метода self.is_instance() (возвращает False)
+    """
     # Возьмем произвольный валидный экземпляр
     instance = Foo(**correct_input)
 
@@ -138,9 +161,15 @@ def test_is_instance_false():
     )
 
     data = {type(value): value for value in values}
+
+    # Подготовим пустой список для ошибок
     instance._field_errors = []
+
     for type_, value in data.items():
         value = 1 if value == '2' else '2'  # Обеспечим невалидность
+        # Все проверки должны вернуть False
         assert not instance._is_instance(value, type_)
 
+    # Ошибки были при проверке каждой items из data,
+    # то есть - длины списков должны быть равны
     assert len(instance._field_errors) == len(values)
