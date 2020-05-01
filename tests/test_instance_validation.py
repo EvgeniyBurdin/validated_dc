@@ -96,7 +96,7 @@ def test_try_replacing_unsuccessfully():
     # датаклассом-потомком InstanceValidation,
     instance = Bar(foo=Foo(i=1))
 
-    # Изменим значение поля foo на словарь (на самом деле, здесь, в тесте,
+    # Изменим значение поля foo на словарь (на самом деле, здесь, в этом тесте,
     # можно подставить любое значение, но при использовании класса это
     # будет именно словарь)
     data = {'i': 2}
@@ -107,7 +107,7 @@ def test_try_replacing_unsuccessfully():
 
     # В поле self._replacement должен быть подготовленный экземпляр, который
     # был получен из словаря
-    instance._replacement = Foo(**data)
+    instance._replacement = Foo(**data)  # Претендент на замену
 
     # Вызовем метод
     instance._try_replacing()
@@ -116,7 +116,7 @@ def test_try_replacing_unsuccessfully():
     assert instance.foo == data
 
     # 2. Присвоим полю self._replace значение True
-    instance._replace = True
+    instance._replace = True  # Выполнять замену, если есть на что
 
     # Но в поле self._replacement поставим None (значение, которое оно
     # получает после инициализации перед валидацией поля)
