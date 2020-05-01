@@ -25,6 +25,7 @@ class Foo(BasicValidation):
     # ... You can use all other standard python classes.
     cc: СustomСlass
 
+
 # Корректные данные для создания экземпляра Foo
 correct_input = {
     'i': 1,
@@ -112,11 +113,13 @@ def test_is_valid():
 
 def test_init_validation():
     """
-        Тест создания и инициализации свойст необходимых для валидации.
+        Тест инициализации свойст необходимых для валидации.
         (в данном случае только одно свойство - self._errors)
     """
     # Возьмем произвольный экземпляр
     instance = Foo(**correct_input)
+
+    instance._errors == {1: 1}  # Присвоим любое непустое значение
 
     instance._init_validation()
     assert instance._errors == {}
@@ -162,7 +165,7 @@ def test_is_instance_false():
 
     data = {type(value): value for value in values}
 
-    # Подготовим пустой список для ошибок
+    # Подготовим гарантированно пустой список для ошибок
     instance._field_errors = []
 
     for type_, value in data.items():
@@ -173,3 +176,25 @@ def test_is_instance_false():
     # Ошибки были при проверке каждой items из data,
     # то есть - длины списков должны быть равны
     assert len(instance._field_errors) == len(values)
+
+
+def test_is_instance_false_and_set_exception():
+    """
+        Тест НЕ успешной работы метода self.is_instance() (возвращает False)
+        в случае возникновения исключения при передаче в метод некорректных
+        аргументов.
+    """
+    # Возьмем произвольный валидный экземпляр
+    instance = Foo(**correct_input)
+
+    # Если передать в метод некорректные аргументы, то возниктнет исключение,
+    # которое будет "погашено", но само исключение сохранится в ошибке.
+
+    # Подготовим гарантированно пустой список для ошибок
+    instance._field_errors = []
+
+    # Вызовем метод с аргументами, которые поднимут исключение
+    instance._is_instance(1, 1)
+
+    # в instance._field_errors[0].exception должен быть экземпляр исключения
+    assert isinstance(instance._field_errors[0].exception, Exception)
