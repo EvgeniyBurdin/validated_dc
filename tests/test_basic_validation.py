@@ -180,7 +180,7 @@ def test_is_instance_false():
     """
         Тест НЕ успешной работы метода self.is_instance() (возвращает False)
     """
-    # Возьмем произвольный валидный экземпляр
+    # Возьмем валидный экземпляр
     instance = Foo(**correct_input)
 
     custom_class_instance = СustomСlass()
@@ -217,7 +217,7 @@ def test_is_instance_false_and_set_exception():
         Если передать в метод некорректные аргументы, то возниктнет исключение,
         которое будет "погашено", но само исключение сохранится в ошибке поля.
     """
-    # Возьмем произвольный валидный экземпляр
+    # Возьмем валидный экземпляр
     instance = Foo(**correct_input)
 
     # Подготовим гарантированно пустой список для ошибок
@@ -230,3 +230,25 @@ def test_is_instance_false_and_set_exception():
 
     # а в instance._field_errors[0].exception должен быть экземпляр исключения
     assert isinstance(instance._field_errors[0].exception, Exception)
+
+
+def test_save_current_field_errors():
+    """
+        Тест сохранения списка ошибок поля в словаре ошибок всего экземпляра.
+    """
+    # Возьмем валидный экземпляр
+    instance = Foo(**correct_input)
+
+    # Его словарь ошибок должен быть пустой
+    assert instance._errors == {}
+
+    # Допустим, сейчас проверяли поле i, и его список ошибок не пуст
+    instance._field_name = 'i'
+    instance._field_errors = ['Просто строка для непустого списка', ]
+
+    # Вызовем метод сохранения ошибки текущего поля
+    instance._save_current_field_errors()
+
+    # Словарь ошибок должен иметь ключ с именем поля и
+    # значением из списка ошибок
+    assert instance._errors[instance._field_name] == instance._field_errors
