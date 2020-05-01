@@ -237,14 +237,23 @@ class InstanceValidation(BasicValidation):
         # Свойство предназначенное для замены словаря
         self._replacement = None
 
+    def _try_replacing(self) -> None:
+        """
+            Пытается заменить значение у текущего поля на текущее значение
+            свойства self._replacement.
+        """
+        # Если включен флаг замены и есть чем заменять, то установим
+        # новое значение у поля
+        if self._replace and self._replacement is not None:
+            setattr(self, self._field_name, self._replacement)
+
     def _is_field_valid(self, field: DataclassesField) -> bool:
 
         result = super()._is_field_valid(field)
 
-        # Если включен флаг замены и валидация поля прошла успешно и
-        # есть чем заменять, то установим новое значение у поля
-        if self._replace and result and self._replacement is not None:
-            setattr(self, self._field_name, self._replacement)
+        if result:
+            # Попробуем произвести замену
+            self._try_replacing()
 
         return result
 
