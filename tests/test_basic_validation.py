@@ -8,7 +8,7 @@ class СustomСlass:
 
     foo = 'foo'
 
-    def bar(self):
+    def method(self):
         pass
 
 
@@ -65,10 +65,10 @@ def test__post_init__():
             Подменим метод старта валидаци
         """
         def _run_validation(self):
-            self.validation_run = True
+            self._validation__started = True
 
     instance = FakeBasicValidation()
-    assert instance.validation_run
+    assert instance._validation__started
 
 
 def test_get_errors():
@@ -102,3 +102,45 @@ def test_init_validation():
 
     instance._init_validation()
     assert instance._errors == {}
+
+
+def test_is_instance_true():
+
+    # Возьмем произвольный экземпляр
+    instance = Foo(**correct_input)
+
+    custom_class_instance = СustomСlass()
+
+    values = (
+        None, True, 0.1, 1, complex(3, 4), set([5, ]), frozenset('7'),
+        (7, 8), [9, ], {11: 12},
+        custom_class_instance, custom_class_instance.method,
+        instance, instance.is_valid
+    )
+
+    data = {type(value): value for value in values}
+
+    for type_, value in data.items():
+        assert instance._is_instance(value, type_)
+
+
+def test_is_instance_false():
+
+    # Возьмем произвольный валидный экземпляр
+    instance = Foo(**correct_input)
+
+    custom_class_instance = СustomСlass()
+
+    values = (
+        None, True, 0.1, 1, '2', complex(3, 4), set([5, ]), frozenset('7'),
+        (7, 8), [9, ], {11: 12},
+        custom_class_instance, custom_class_instance.method
+    )
+
+    data = {type(value): value for value in values}
+    instance._field_errors = []
+    for type_, value in data.items():
+        value = 1 if value == '2' else '2'  # Обеспечим невалидность
+        assert not instance._is_instance(value, type_)
+
+    assert len(instance._field_errors) == len(values)
