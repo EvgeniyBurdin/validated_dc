@@ -1,5 +1,5 @@
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from validated_dc import BasicValidation
 
@@ -124,6 +124,34 @@ def test_init_validation():
     assert instance._errors == {}
 
 
+def test_init_field_validation():
+    """
+        Тест инициализации свойст необходимых при валидации каждого поля.
+    """
+    # Возьмем корректный экземпляр
+    instance = Foo(**correct_input)
+
+    # Возьмем первое поле у экземпляра
+    field = fields(instance)[0]
+
+    # Возьмем первые имя ключа и значение из словаря исходных данных
+    input_name, input_value = list(correct_input.items())[0]
+
+    # Вызовем метот инициализации свойств для валидации этого поля
+    instance._init_field_validation(field)
+
+    # Проверим свойства необходимые для начала валидации поля:
+
+    # ... список ошибок должен быть пустой
+    assert instance._field_errors == []
+    # ... должно быть сохранено имя поля
+    assert instance._field_name == input_name
+    # ... должно быть сохранено значение поля
+    assert instance._field_value == input_value
+    # ... должна быть сохранена аннотация поля
+    assert instance._field_annotation == type(input_value)
+
+
 def test_is_instance_true():
     """
         Тест успешной работы метода self.is_instance() (возвращает True)
@@ -197,7 +225,7 @@ def test_is_instance_false_and_set_exception():
 
     # Вызовем метод с аргументами, которые поднимут исключение
     result = instance._is_instance(1, 1)
-    # Но метод все равно должен вернуть False
+    # Но метод его должен "погасить" и вернуть False
     assert not result
 
     # а в instance._field_errors[0].exception должен быть экземпляр исключения
