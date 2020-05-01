@@ -1,3 +1,7 @@
+"""
+    Тесты класса InstanceValidation.
+"""
+
 from dataclasses import dataclass, fields
 
 from validated_dc import InstanceValidation
@@ -193,3 +197,33 @@ def test_try_replacing_unsuccessfully():
 
     # Значения поля должно остаться прежним
     assert instance.foo == data
+
+
+def test_is_field_valid():
+    """
+        Тест метода self._is_field_valid().
+    """
+    # После вызова метода родительского класса и если он вернул True, метод
+    # в классе InstanceValidation должен вызвать метод self._try_replacing().
+    # Для проверки этого функционала подменим метод _try_replacing()
+    @dataclass
+    class FakeInstanceValidation(InstanceValidation):
+        i: int
+
+        def _try_replacing(self) -> None:
+            self._try_replacing__called = True  # Маркер вызова
+
+    # Создадим валидный экземпляр
+    instance = FakeInstanceValidation(i=1)
+
+    # Установим в False маркер вызова
+    instance._try_replacing__called = False
+
+    # Для вызова _is_field_valid() нужено экземпляр поля, получим его
+    field = fields(instance)[0]
+
+    # Вызовем метод
+    instance._is_field_valid(field)
+
+    # Метод _try_replacing() должен быть вызван
+    assert instance._try_replacing__called
