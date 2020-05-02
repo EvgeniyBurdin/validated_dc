@@ -8,7 +8,7 @@ Dataclass with data validation. Checks the value of its fields by their annotati
 
 1. Support for standard and custom Python classes.
 2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`. These aliases can be embedded in each other.
-3. Replacing the `dict` of the field value with the `dataclass` instance from the field annotation (useful, for example, when retrieving data via api).
+3. When initializing an instance of a class, you can use the value of the field `dict` instead of the `ValidatedDC` instance specified in the field annotation. (useful, for example, when retrieving data via api).
 
 See detailed examples in `examples.py`.
 
