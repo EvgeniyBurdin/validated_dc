@@ -4,6 +4,7 @@ python:
 before_install:
     - pip install pytest pytest-cov pytest-pep8
     - pip install python-coveralls coverage
+    - pip install nose
 script:
   - pytest -v --cov=autovps tests
 after_success:
