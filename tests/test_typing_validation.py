@@ -191,3 +191,10 @@ def test_is_union_instance(instance):
     annotation = Union[List[Union[int, Email]], str]
     value = [1, {'email': 'mail@mail.com'}, 2, Email(email='mail2@mail.com')]
     assert instance._is_union_instance(value, annotation)
+
+    # а здесь - вернет False т.к. поля xxxx нет в классе Email
+    value = [1, {'xxxx': 'mail@mail.com'}, 2, Email(email='mail2@mail.com')]
+    assert not instance._is_union_instance(value, annotation)
+    # и здесь - вернет False т.к. email должен быть строкой
+    value = [1, {'email': 12345}, 2, Email(email='mail2@mail.com')]
+    assert not instance._is_union_instance(value, annotation)
