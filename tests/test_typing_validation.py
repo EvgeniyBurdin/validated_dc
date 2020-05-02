@@ -192,3 +192,56 @@ def test_is_union_instance(instance):
     assert not instance._is_union_instance(value, annotation)
     value = [1, {'email': 'mail@mail.com'}, 2, Email(email=12345)]
     assert not instance._is_union_instance(value, annotation)
+
+
+def test_is_list_instance(instance):
+    """
+        Тест метода _is_list_instance() который возвращает True если
+        все элементы списка имеет тип указанный в List, и False если нет.
+    """
+    annotation = List[int]
+    value = [1, 2, ]
+    assert instance._is_list_instance(value, annotation)
+    value = [1, '2', ]
+    assert not instance._is_list_instance(value, annotation)
+    value = 1
+    assert not instance._is_list_instance(value, annotation)
+
+    annotation = List[List[int]]
+    value = [[1, 2, ], [3, 4, ]]
+    assert instance._is_list_instance(value, annotation)
+    value = [[1, 2, ], [3, '4', ]]
+    assert not instance._is_list_instance(value, annotation)
+
+
+def test_is_literal_instance(instance):
+    """
+        Тест метода _is_literal_instance() который возвращает True если
+        значение присутствует в кортеже Literal, и False если нет.
+    """
+    annotation = Literal[1, 2]
+    value = 1
+    assert instance._is_literal_instance(value, annotation)
+    value = 2
+    assert instance._is_literal_instance(value, annotation)
+    value = '2'
+    assert not instance._is_literal_instance(value, annotation)
+    value = 3
+    assert not instance._is_literal_instance(value, annotation)
+
+
+def test_is_any_instance(instance):
+    """
+        Тест метода _is_any_instance() который возвращает True всегда
+    """
+    annotation = Any
+    value = 1
+    assert instance._is_any_instance(value, annotation)
+    value = '1'
+    assert instance._is_any_instance(value, annotation)
+    value = Email
+    assert instance._is_any_instance(value, annotation)
+    value = True
+    assert instance._is_any_instance(value, annotation)
+    value = int
+    assert instance._is_any_instance(value, annotation)
