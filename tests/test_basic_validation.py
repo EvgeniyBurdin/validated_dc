@@ -1,3 +1,6 @@
+"""
+    Тесты класса BasicValidation.
+"""
 import copy
 from dataclasses import dataclass, fields
 
