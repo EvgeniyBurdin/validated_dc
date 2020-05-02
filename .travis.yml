@@ -2,10 +2,10 @@ language: python
 python:
 - "3.8"
 before_install:
-    - pip install pytest pytest-cov pytest-pep8
-    - pip install python-coveralls coverage
-    - pip install nose
+    - pip install pytest
+    - pip install pytest-cov
+    - pip install coveralls
 script:
-  - pytest -v --cov=validated_dc tests
+  - pytest  --cov=validated_dc/
 after_success:
   - coveralls
