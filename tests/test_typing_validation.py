@@ -144,8 +144,15 @@ def test_is_union_instance(instance):
         Тест метода _is_union_instance() который возвращает True если
         значение имеет тип одного из типов кортежа Union, и False если нет.
     """
-    annotation = Union[int, str]
+    annotation = Optional[int]
+    value = 1
+    assert instance._is_union_instance(value, annotation)
+    value = None
+    assert instance._is_union_instance(value, annotation)
+    value = 0.3  # Ошибка - float не int
+    assert not instance._is_union_instance(value, annotation)
 
+    annotation = Union[int, str]
     value = 1
     assert instance._is_union_instance(value, annotation)
     value = '2'
