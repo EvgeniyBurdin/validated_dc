@@ -1,6 +1,6 @@
 # ValidatedDC
 
-[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc)
+[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc) [![Coverage Status](https://coveralls.io/repos/github/EvgeniyBurdin/validated_dc/badge.svg?branch=master)](https://coveralls.io/github/EvgeniyBurdin/validated_dc?branch=master)
 
 Dataclass with data validation. Checks the value of its fields by their annotations.
 
