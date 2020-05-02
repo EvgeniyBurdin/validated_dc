@@ -6,6 +6,6 @@ before_install:
     - pip install pytest-cov
     - pip install coveralls
 script:
-  - pytest  --cov=validated_dc/
+  - pytest  --cov=validated_dc
 after_success:
   - coveralls
