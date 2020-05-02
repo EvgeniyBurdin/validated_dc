@@ -181,6 +181,8 @@ def test_is_union_instance(instance):
     annotation = Union[List[Union[int, str]], str]
     value = [1, '2', ]
     assert instance._is_union_instance(value, annotation)
+    value = '1'
+    assert instance._is_union_instance(value, annotation)
     value = [1, '2', 0.3]  # Ошибка - элемент списка может быть int или str
     assert not instance._is_union_instance(value, annotation)
 
