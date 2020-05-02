@@ -21,21 +21,6 @@ class Email(TypingValidation):
     kind: Literal['personal', 'working'] = 'personal'
 
 
-@dataclass
-class Address(TypingValidation):
-    city: str
-    zip_code: Optional[str] = None
-
-
-@dataclass
-class Person(TypingValidation):
-    name: str
-    age: int
-    contact: Union[Phone, Email, List[Union[Phone, Email]]]
-    address: Address
-    extra: Any
-
-
 @pytest.fixture()
 def instance():
     """
@@ -198,5 +183,5 @@ def test_is_union_instance(instance):
     # и здесь - вернет False т.к. email должен быть строкой
     value = [1, {'email': 12345}, 2, Email(email='mail2@mail.com')]
     assert not instance._is_union_instance(value, annotation)
-    value = [1, {'email':'mail@mail.com'}, 2, Email(email=12345)]
+    value = [1, {'email': 'mail@mail.com'}, 2, Email(email=12345)]
     assert not instance._is_union_instance(value, annotation)
