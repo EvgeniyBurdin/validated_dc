@@ -1,8 +1,6 @@
 # ValidatedDC
 
-[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc) 
-
-[![codecov](https://codecov.io/gh/EvgeniyBurdin/validated_dc/branch/master/graph/badge.svg)](https://codecov.io/gh/EvgeniyBurdin/validated_dc)
+[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc)
 
 Dataclass with data validation. Checks the value of its fields by their annotations.
 
