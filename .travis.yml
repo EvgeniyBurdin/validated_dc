@@ -6,6 +6,6 @@ before_install:
     - pip install python-coveralls coverage
     - pip install nose
 script:
-  - pytest -v --cov=autovps tests
+  - pytest -v --cov=validated_dc tests
 after_success:
   - coveralls
