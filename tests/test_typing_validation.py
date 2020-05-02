@@ -100,9 +100,6 @@ def test_is_instance_false():
     value = [1, '2', {'xxxx': 'mail@mail.com'}, ]
     assert not instance._is_instance(value, annotation)
 
-    # и т.д. и т.п...
-    # Можно использовать любой поддерживаемый алиас.
-
 
 def test_is_instance_false_error_with_exception():
     """
