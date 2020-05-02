@@ -302,10 +302,11 @@ class TypingValidation(InstanceValidation):
 
             if self._is_supported_alias(str_annotation):
 
-                is_instance = self._get_alias_method(str_annotation)
-
                 try:
+                    is_instance = self._get_alias_method(str_annotation)
+
                     return is_instance(value, annotation)
+
                 except Exception:
                     pass
 
