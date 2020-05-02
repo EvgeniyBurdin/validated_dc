@@ -1,5 +1,7 @@
 # ValidatedDC
 
+[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc)
+
 Dataclass with data validation. Checks the value of its fields by their annotations.
 
 ## Capabilities
