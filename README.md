@@ -6,13 +6,15 @@ Dataclass with data validation. Checks the value of its fields by their annotati
 
 ## Capabilities
 
-`ValidatedDC` is a regular Python dataclass, but with the ability to check the validity of the data by which this dataclass was initialized. Also, you can check the data at any time during the life of the instance.
+`ValidatedDC` is a regular Python dataclass.
 
-1. Support for standard and custom Python classes.
+1. Support for standard types and custom Python classes.
 2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`. These aliases can be embedded in each other.
 3. When initializing an instance of a class, you can use the value of the field `dict` instead of the `ValidatedDC` instance specified in the field annotation (useful, for example, when retrieving data via api).
+4. Data validation occurs immediately after an instance is created, and can also be run by the `is_valid()` method at any time.
+5. The `get_errors()` method will show the full traceback of errors in the fields, including errors of nested classes.
 
-See detailed in the 'examples' folder.
+See detailed in the `examples` folder.
 
 ## Installation
 
