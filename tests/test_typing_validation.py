@@ -37,15 +37,15 @@ def test_is_instance_true(instance):
     value = 1
     assert instance._is_instance(value, annotation)
 
-    annotation = List[int]  # Еще раз
+    annotation = List[int]  # и еще
     value = [1, ]
     assert instance._is_instance(value, annotation)
 
-    annotation = List[Optional[int]]  # Еще раз
+    annotation = List[Optional[int]]
     value = [1, None, ]
     assert instance._is_instance(value, annotation)
 
-    annotation = List[Union[int, str, list]]  # Еще раз
+    annotation = List[Union[int, str, list]]
     value = [1, '2', [3, 4, ], ]
     assert instance._is_instance(value, annotation)
 
@@ -67,19 +67,19 @@ def test_is_instance_false(instance):
         Тест метода _is_instance() который вернет False
     """
     annotation = List[int]
-    value = ['1', ]  # Ошибка - str вместо int
+    value = ['1', ]  # Ошибка - str не int
     assert not instance._is_instance(value, annotation)
 
     annotation = List[Optional[int]]
-    value = ['1', None, ]  # Ошибка - str вместо int
+    value = ['1', None, ]  # Ошибка - str не int и не None
     assert not instance._is_instance(value, annotation)
 
     annotation = List[Union[int, str, list]]
-    value = [.1, '2', [3, 4, ], ]  # Ошибка - float вместо int
+    value = [.1, '2', [3, 4, ], ]  # Ошибка - float не int не str и не list
     assert not instance._is_instance(value, annotation)
 
     annotation = List[Union[int, str, Email]]
-    value = [1, '2', Email(email=12345), ]  # Ошибка - int вместо str
+    value = [1, '2', Email(email=12345), ]  # Ошибка - int не str
     assert not instance._is_instance(value, annotation)
 
     # Ошибки:
@@ -138,6 +138,8 @@ def test_is_supported_alias(instance):
     for str_alias in STR_ALIASES.values():
         assert instance._is_supported_alias(str_alias)
 
+    assert not instance._is_supported_alias(str(Dict[int, int]))
+
 
 def test_is_union_instance(instance):
     """
@@ -149,7 +151,7 @@ def test_is_union_instance(instance):
     assert instance._is_union_instance(value, annotation)
     value = None
     assert instance._is_union_instance(value, annotation)
-    value = 0.3  # Ошибка - float не int
+    value = 0.3  # Ошибка - float не int и не None
     assert not instance._is_union_instance(value, annotation)
 
     annotation = Union[int, str]
@@ -157,7 +159,7 @@ def test_is_union_instance(instance):
     assert instance._is_union_instance(value, annotation)
     value = '2'
     assert instance._is_union_instance(value, annotation)
-    value = 0.3  # Ошибка - float не int
+    value = 0.3  # Ошибка - float не int и не  str
     assert not instance._is_union_instance(value, annotation)
 
     # Union так же может иметь вложенные поддерживаемые алиасы из typing
