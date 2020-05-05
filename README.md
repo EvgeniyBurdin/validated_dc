@@ -1,6 +1,6 @@
 # ValidatedDC
 
-[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc) [![Coverage Status](https://coveralls.io/repos/github/EvgeniyBurdin/validated_dc/badge.svg?branch=master)](https://coveralls.io/github/EvgeniyBurdin/validated_dc?branch=master)
+[![Build Status](https://travis-ci.com/EvgeniyBurdin/validated_dc.svg?branch=master)](https://travis-ci.com/EvgeniyBurdin/validated_dc) [![Coverage Status](https://coveralls.io/repos/github/EvgeniyBurdin/validated_dc/badge.svg?branch=master)](https://coveralls.io/github/EvgeniyBurdin/validated_dc?branch=master) [![PyPI version](https://badge.fury.io/py/validated-dc.svg)](https://badge.fury.io/py/validated-dc) [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/EvgeniyBurdin/validated_dc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/EvgeniyBurdin/validated_dc/context:python) [![Total alerts](https://img.shields.io/lgtm/alerts/g/EvgeniyBurdin/validated_dc.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/EvgeniyBurdin/validated_dc/alerts/)
 
 Dataclass with data validation. Checks the value of its fields by their annotations.
 
