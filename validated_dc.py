@@ -277,13 +277,18 @@ class TypingValidationError(BasicValidationError):
 
 
 @dataclass
-class ListValidationError(BasicValidationError):
+class ListValidationError:
     item_index: int
+    item_repr:  str   # Строковое представление элемента или его части
+    item_type:  type  # Тип элемента
+    annotation: type  # Тип в аннотации
 
 
 @dataclass
-class LiteralValidationError(BasicValidationError):
-    pass
+class LiteralValidationError:
+    literal_repr: str   # Строковое представление литерала или его части
+    literal_type: type  # Тип литерала
+    annotation: type    # Тип в аннотации
 
 
 @dataclass
@@ -300,18 +305,27 @@ class TypingValidation(InstanceValidation):
 
         if self._is_typing_alias(str_annotation):
 
-            if self._is_supported_alias(str_annotation):
+            if not self._is_supported_alias(str_annotation):
 
-                is_instance = self._get_alias_method(str_annotation)
-                if is_instance is not None:
-                    return is_instance(value, annotation)
+                exception = TypeError('Alias is not supported!')
+                self._field_errors.append(TypingValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=annotation, exception=exception
+                ))
+                return False
 
-            exception = TypeError('Alias is not supported!')
-            self._field_errors.append(TypingValidationError(
-                value_repr=get_value_repr(value), value_type=type(value),
-                annotation=annotation, exception=exception
-            ))
-            return False
+            is_instance = self._get_alias_method(str_annotation)
+
+            if is_instance is not None:
+                self._typing_field_error = None
+                result = is_instance(value, annotation)
+                if result:
+                    return True
+                else:
+                    if self._typing_field_error is not None:
+                        self._field_errors.append(self._typing_field_error)
+                        self._typing_field_error = None
+                    return False
 
         return super()._is_instance(value, annotation)
 
@@ -391,29 +405,22 @@ class TypingValidation(InstanceValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
-                    if self._field_errors:
-                        last = self._field_errors[-1]
-                        last_is_basic = type(last) == BasicValidationError
-                        if last_is_basic:
-                            self._field_errors = self._field_errors[:-1]
-
-                    self._field_errors.append(ListValidationError(
-                        value_repr=get_value_repr(item_value),
-                        value_type=type(item_value), item_index=i,
-                        annotation=annotation, exception=None
-                    ))
+                    self._typing_field_error = ListValidationError(
+                        item_index=i, item_repr=get_value_repr(item_value),
+                        item_type=type(item_value), annotation=annotation
+                    )
                     return False
 
             # Все элементы списка value валидные.
             self._replacement = new_value
             return True
-        else:
-            # Значение поля - не список, а это ошибка валидации
-            self._field_errors.append(BasicValidationError(
-                value_repr=get_value_repr(value), value_type=type(value),
-                annotation=annotation, exception=None
-            ))
-            return False
+
+        self._typing_field_error = BasicValidationError(
+            value_repr=get_value_repr(value), value_type=type(value),
+            annotation=annotation, exception=None
+        )
+
+        return False
 
     def _is_literal_instance(self, value: Any, annotation: type) -> bool:
         """
@@ -424,10 +431,10 @@ class TypingValidation(InstanceValidation):
         result = value in annotation.__args__
 
         if not result:
-            self._field_errors.append(LiteralValidationError(
-                value_repr=get_value_repr(value), value_type=type(value),
-                annotation=annotation, exception=None
-            ))
+            self._typing_field_error = LiteralValidationError(
+                literal_repr=get_value_repr(value), literal_type=type(value),
+                annotation=annotation
+            )
 
         return result
 
