@@ -222,11 +222,11 @@ class InstanceValidation(BasicValidation):
                     self._replacement = instance
                     return True
 
-            self._field_errors.append(InstanceValidationError(
-                value_repr=get_value_repr(value), value_type=type(value),
-                annotation=annotation, exception=exception, errors=errors
-            ))
-            return False
+                self._field_errors.append(InstanceValidationError(
+                    value_repr=get_value_repr(value), value_type=type(value),
+                    annotation=annotation, exception=exception, errors=errors
+                ))
+                return False
 
         return super()._is_instance(value, annotation)
 
@@ -391,6 +391,12 @@ class TypingValidation(InstanceValidation):
                         self._replacement = False
                     new_value.append(item_value)
                 else:
+                    if self._field_errors:
+                        last = self._field_errors[-1]
+                        last_is_basic = type(last) == BasicValidationError
+                        if last_is_basic:
+                            self._field_errors = self._field_errors[:-1]
+
                     self._field_errors.append(ListValidationError(
                         value_repr=get_value_repr(item_value),
                         value_type=type(item_value), item_index=i,
