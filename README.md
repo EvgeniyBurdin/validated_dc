@@ -30,6 +30,7 @@ from typing import List, Union
 
 from validated_dc import ValidatedDC
 
+
 # Some combinations of List and Union
 
 @dataclass
@@ -49,18 +50,15 @@ instance = Bar(foo=foo)
 assert instance.get_errors() is None
 assert instance == Bar(foo=Foo(value=1))
 
-
 foo = {'value': [1, 2]}
 instance = Bar(foo=foo)
 assert instance.get_errors() is None
 assert instance == Bar(foo=Foo(value=[1, 2]))
 
-
 foo = [{'value': 1}, {'value': 2}]
 instance = Bar(foo=foo)
 assert instance.get_errors() is None
 assert instance == Bar(foo=[Foo(value=1), Foo(value=2)])
-
 
 foo = [{'value': [1, 2]}, {'value': [3, 4]}]
 instance = Bar(foo=foo)
@@ -89,6 +87,7 @@ instance.foo[1]['value'][0] = 3
 assert instance.is_valid()
 assert instance.get_errors() is None
 assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
+
 
 # --- get_errors() ---
 
