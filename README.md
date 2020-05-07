@@ -22,67 +22,107 @@ See detailed in the `examples` folder.
 pip install validated-dc
 ```
 
-## Simple example
+## Quick example
 
 ```python
-from validated_dc import ValidatedDC
 from dataclasses import dataclass
-
 from typing import List, Union
 
+from validated_dc import ValidatedDC
+
+# Some combinations of List and Union
 
 @dataclass
 class Foo(ValidatedDC):
-    foo: int
+    value: Union[int, List[int]]
 
 
 @dataclass
 class Bar(ValidatedDC):
-    bar: Union[Foo, List[Foo]]
+    foo: Union[Foo, List[Foo]]
 
 
-foo = {'foo': 1}
-instance = Bar(bar=foo)
-print(instance.get_errors())  # None
-print(instance)               # Bar(bar=Foo(foo=1))
+# --- Valid input ---
 
-list_foo = [{'foo': 1}, {'foo': 2}]
-instance = Bar(bar=list_foo)
-print(instance.get_errors())  # None
-print(instance)               # Bar(bar=[Foo(foo=1), Foo(foo=2)])
+foo = {'value': 1}
+instance = Bar(foo=foo)
+assert instance.get_errors() is None
+assert instance == Bar(foo=Foo(value=1))
 
-instance.bar.append({'foo': '3'})
-print(instance.is_valid())    # False
+
+foo = {'value': [1, 2]}
+instance = Bar(foo=foo)
+assert instance.get_errors() is None
+assert instance == Bar(foo=Foo(value=[1, 2]))
+
+
+foo = [{'value': 1}, {'value': 2}]
+instance = Bar(foo=foo)
+assert instance.get_errors() is None
+assert instance == Bar(foo=[Foo(value=1), Foo(value=2)])
+
+
+foo = [{'value': [1, 2]}, {'value': [3, 4]}]
+instance = Bar(foo=foo)
+assert instance.get_errors() is None
+assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
+
+
+# --- Invalid input ---
+
+foo = {'value': 'S'}
+instance = Bar(foo=foo)
+assert instance.get_errors()
+assert instance == Bar(foo={'value': 'S'})
+# fix
+instance.foo['value'] = 1
+assert instance.is_valid()
+assert instance.get_errors() is None
+assert instance == Bar(foo=Foo(value=1))
+
+foo = [{'value': [1, 2]}, {'value': ['S', 4]}]
+instance = Bar(foo=foo)
+assert instance.get_errors()
+assert instance == Bar(foo=[{'value': [1, 2]}, {'value': ['S', 4]}])
+# fix
+instance.foo[1]['value'][0] = 3
+assert instance.is_valid()
+assert instance.get_errors() is None
+assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
+
+# --- get_errors() ---
+
+foo = {'value': 'S'}
+instance = Bar(foo=foo)
 print(instance.get_errors())
-# {'bar': [InstanceValidationError(value_repr='[Foo(foo=1), Foo(foo=2),
-# {...]', value_type=<class 'list'>, annotation=<class '__main__.Foo'>,
-# exception=None, errors=None), InstanceValidationError(value_repr=
-# "{'foo': '3'}", value_type=<class 'dict'>, annotation=<class
-# '__main__.Foo'>, exception=None, errors={'foo': [BasicValidationError
-# (value_repr='3', value_type=<class 'str'>, annotation=<class 'int'>,
-# exception=None)]}), ListValidationError(value_repr="{'foo': '3'}",
-# value_type=<class 'dict'>, annotation=<class '__main__.Foo'>,
-# exception=None, item_index=2)]}
+# {
+#   'foo': [
+#       # An unsuccessful attempt to use the dictionary to create a Foo instance
+#       InstanceValidationError(
+#           value_repr="{'value': 'S'}",
+#           value_type=<class 'dict'>,
+#           annotation=<class '__main__.Foo'>,
+#           exception=None,
+#           errors={
+#               'value': [
+#                   BasicValidationError(  # because the str isn't an int
+#                       value_repr='S', value_type=<class 'str'>,
+#                       annotation=<class 'int'>, exception=None
+#                   ),
+#                   BasicValidationError(  # and the str is not a list of int
+#                       value_repr='S', value_type=<class 'str'>,
+#                       annotation=typing.List[int], exception=None
+#                   )
+#               ]
+#           }
+#       ),
+#       BasicValidationError(  # the dict is not a list of Foo
+#           value_repr="{'value': 'S'}",
+#           value_type=<class 'dict'>,
+#           annotation=typing.List[__main__.Foo],
+#           exception=None
+#       )
+#   ]
+# }
 
-print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': '3'}])
-
-instance.bar[2]['foo'] = 3
-print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), {'foo': 3}])
-print(instance.is_valid())    # True
-print(instance.get_errors())  # None
-print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo=3)]
-
-instance.bar[2].foo = '3'
-print(instance)  # Bar(bar=[Foo(foo=1), Foo(foo=2), Foo(foo='3')])
-print(instance.is_valid())  # False
-print(instance.get_errors())
-# {'bar': [InstanceValidationError(value_repr='[Foo(foo=1), Foo(foo=2),
-# F...]', value_type=<class 'list'>, annotation=<class '__main__.Foo'>,
-# exception=None, errors=None), InstanceValidationError(value_repr=
-# "{'foo': '3'}", value_type=<class 'dict'>, annotation=<class
-# '__main__.Foo'>, exception=None, errors={'foo': [BasicValidationError
-# (value_repr='3', value_type=<class 'str'>, annotation=<class 'int'>,
-# exception=None)]}), ListValidationError(value_repr="Foo(foo='3')",
-# value_type=<class '__main__.Foo'>, annotation=<class '__main__.Foo'>,
-# exception=None, item_index=2)]}
 ```
