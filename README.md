@@ -22,6 +22,18 @@ See detailed in the `examples` folder.
 pip install validated-dc
 ```
 
+## python 3.7 support
+
+Support for `typing.Literal` has appeared in *python 3.8*. But you can use `ValidatedDC` in *python 3.7*.
+To do this, just copy the file `validated_dc.py` into your project (without installing the package) and change the import in it so:
+
+```python
+...
+from typing import Any, Callable, List, Optional, Union
+from typing_extensions import Literal
+...
+```
+
 ## Quick example
 
 ```python
