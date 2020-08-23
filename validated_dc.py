@@ -334,9 +334,9 @@ class TypingValidation(InstanceValidation):
         """
             Проверяет является ли annotation алиасом из модуля typing
         """
-        str_alias = list(STR_ALIASES.values())[0]
-        prefix = str_alias[:str_alias.find('.')]
-        return annotation.startswith(prefix)
+        str_aliases = STR_ALIASES.values()
+        prefixes = [alias[:alias.find('.')] for alias in str_aliases]
+        return annotation.startswith(tuple(prefixes))
 
     @staticmethod
     def _is_supported_alias(annotation: str) -> bool:
