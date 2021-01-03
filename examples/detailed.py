@@ -1,7 +1,11 @@
 from validated_dc import ValidatedDC
 from dataclasses import dataclass
 
-from typing import List, Union, Literal, Optional
+from typing import List, Union, Optional
+try:
+    from typing import Literal
+except Exception:  # pragma: no cover
+    from typing_extensions import Literal
 
 
 # --- Data schema ---

@@ -37,9 +37,13 @@
 """
 import copy
 from dataclasses import Field as DataclassesField
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from dataclasses import fields as dataclasses_fields
-from typing import Any, Callable, List, Literal, Optional, Union
+from typing import Any, Callable, List, Optional, Union
+try:
+    from typing import Literal
+except Exception:  # pragma: no cover
+    from typing_extensions import Literal
 
 
 @dataclass
@@ -206,6 +210,7 @@ class InstanceValidation(BasicValidation):
 
             exception = None
             errors = None
+            instance = None
 
             if isinstance(value, dict) or isinstance(value, annotation):
 

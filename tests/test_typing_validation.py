@@ -2,7 +2,11 @@
     Тесты класса TypingValidation.
 """
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Optional, Union
+try:
+    from typing import Literal
+except Exception:  # pragma: no cover
+    from typing_extensions import Literal
 
 import pytest
 

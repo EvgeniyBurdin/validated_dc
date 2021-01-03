@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='validated-dc',
-    version='1.2.1',
+    version='1.2.2',
     license='BSD',
     author='Evgeniy Burdin',
     author_email='e.s.burdin@mail.ru',
@@ -15,10 +15,11 @@ setup(
     url='https://github.com/EvgeniyBurdin/validated_dc',
     keywords='validated dataclasses typing dict api',
     classifiers=[
+        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Topic :: Software Development',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.7, <3.9',
 )
