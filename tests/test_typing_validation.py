@@ -41,7 +41,11 @@ def test_is_instance_true(instance):
     value = 1
     assert instance._is_instance(value, annotation)
 
-    annotation = List[int]  # и еще
+    annotation = Optional[int]  # и еще
+    value = 1
+    assert instance._is_instance(value, annotation)
+
+    annotation = List[int]
     value = [1, ]
     assert instance._is_instance(value, annotation)
 

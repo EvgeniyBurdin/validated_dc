@@ -270,7 +270,7 @@ class InstanceValidation(BasicValidation):
 STR_ALIASES = {
     List: str(List),
     Union: str(Union),
-    Optional: str(Union),  # Представление как и у Union
+    Optional: str(Optional),
     Any: str(Any),
     Literal: str(Literal)
 }
@@ -358,7 +358,8 @@ class TypingValidation(InstanceValidation):
             Возавращает метод для проверки алиаса
         """
 
-        if annotation.startswith(STR_ALIASES[Union]):
+        if annotation.startswith(STR_ALIASES[Union]) or \
+            annotation.startswith(STR_ALIASES[Optional]):
             return self._is_union_instance
 
         elif annotation.startswith(STR_ALIASES[List]):

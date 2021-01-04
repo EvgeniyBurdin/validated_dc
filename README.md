@@ -24,7 +24,7 @@ pip install validated-dc
 
 ## Python versions support
 
-Versions `3.7` and `3.8` are currently supported.  
+Versions `3.7`, `3.8` and `3.9` are currently supported.  
 
 To work with version `python 3.7` you need to install:  
 
