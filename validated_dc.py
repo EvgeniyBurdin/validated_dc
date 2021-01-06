@@ -203,6 +203,8 @@ class InstanceValidation(BasicValidation):
         # словаря для создания такого экземпляра), или Нет.
         self._replace = True
 
+        self._replaced_field_names = []
+
     def _is_instance(self, value: Any, annotation: type) -> bool:
 
         is_type = type(annotation) == type
@@ -251,6 +253,7 @@ class InstanceValidation(BasicValidation):
         # новое значение у поля
         if self._replace and self._replacement is not None:
             setattr(self, self._field_name, self._replacement)
+            self._replaced_field_names.append(self._field_name)
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
 
