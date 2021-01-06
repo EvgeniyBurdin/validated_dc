@@ -221,7 +221,8 @@ class InstanceValidation(BasicValidation):
 
                 try:
                     instance = annotation(**value)
-                    errors = instance.get_errors()
+                    errors = instance._errors if instance._errors \
+                        else None
                 except Exception as exc:
                     exception = exc
 
