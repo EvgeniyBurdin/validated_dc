@@ -359,7 +359,7 @@ class TypingValidation(InstanceValidation):
         """
 
         if annotation.startswith(STR_ALIASES[Union]) or \
-            annotation.startswith(STR_ALIASES[Optional]):
+           annotation.startswith(STR_ALIASES[Optional]):
             return self._is_union_instance
 
         elif annotation.startswith(STR_ALIASES[List]):
