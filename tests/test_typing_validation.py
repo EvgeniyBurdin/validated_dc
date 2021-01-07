@@ -107,7 +107,7 @@ def test_is_instance_false_error_with_exception(instance):
         записывает информацию о нем в ошибку.
     """
     # Убедимся что ошибок нет
-    assert not instance._field_errors
+    assert not instance._field_errors__vdc
 
     annotation = Dict['str', 'str']  # Возьмем любой НЕподдерживаемый алиас
     value = {'1': '2'}
@@ -116,7 +116,7 @@ def test_is_instance_false_error_with_exception(instance):
     assert not instance._is_instance(value, annotation)
     # ... а список ошибок должен пополниться одной ошибкой, которая,
     # в том числе, имеет и информацию об исключении
-    assert instance._field_errors[0].exception
+    assert instance._field_errors__vdc[0].exception
 
 
 def test_is_typing_alias(instance):

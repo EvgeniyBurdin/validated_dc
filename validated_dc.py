@@ -99,8 +99,8 @@ class BasicValidation:
             его валидности, а так же после вызова метода is_valid(self).
         """
         logger.warning(
-            "DEPRECATED: Instance method 'instance.get_errors()' is deprecated. "
-            "Support for this method will end in version 2.0. "
+            "DEPRECATED: Instance method 'instance.get_errors()' is "
+            "deprecated. Support for this method will end in version 2.0. "
             "Use a separate function "
             "'from validated_dc import get_errors', "
             "and 'get_errors(instance)'."
@@ -145,7 +145,7 @@ class BasicValidation:
             result = False
 
         if not result:
-            self._field_errors.append(BasicValidationError(
+            self._field_errors__vdc.append(BasicValidationError(
                 value_repr=get_value_repr(value), value_type=type(value),
                 annotation=annotation, exception=exception
             ))
@@ -156,10 +156,10 @@ class BasicValidation:
         """
             Инициализация валидации для текущего поля
         """
-        self._field_errors = []
-        self._field_name = field.name
-        self._field_value = getattr(self, field.name)
-        self._field_annotation = field.type
+        self._field_errors__vdc = []
+        self._field_name__vdc = field.name
+        self._field_value__vdc = getattr(self, field.name)
+        self._field_annotation__vdc = field.type
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
         """
@@ -167,14 +167,16 @@ class BasicValidation:
         """
         self._init_field_validation(field)
 
-        return self._is_instance(self._field_value, self._field_annotation)
+        return self._is_instance(
+            self._field_value__vdc, self._field_annotation__vdc
+        )
 
     def _save_current_field_errors(self) -> None:
         """
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        self._errors__vdc[self._field_name] = self._field_errors
+        self._errors__vdc[self._field_name__vdc] = self._field_errors__vdc
 
     def _run_validation(self) -> None:
         """
@@ -261,7 +263,7 @@ class InstanceValidation(BasicValidation):
                     self._replacement = instance
                     return True
 
-                self._field_errors.append(InstanceValidationError(
+                self._field_errors__vdc.append(InstanceValidationError(
                     value_repr=get_value_repr(value), value_type=type(value),
                     annotation=annotation, exception=exception, errors=errors
                 ))
@@ -284,8 +286,8 @@ class InstanceValidation(BasicValidation):
         # Если включен флаг замены и есть чем заменять, то установим
         # новое значение у поля
         if self._replace and self._replacement is not None:
-            setattr(self, self._field_name, self._replacement)
-            self._replaced_field_names.append(self._field_name)
+            setattr(self, self._field_name__vdc, self._replacement)
+            self._replaced_field_names.append(self._field_name__vdc)
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
 
@@ -348,7 +350,7 @@ class TypingValidation(InstanceValidation):
             if not self._is_supported_alias(str_annotation):
 
                 exception = TypeError('Alias is not supported!')
-                self._field_errors.append(TypingValidationError(
+                self._field_errors__vdc.append(TypingValidationError(
                     value_repr=get_value_repr(value), value_type=type(value),
                     annotation=annotation, exception=exception
                 ))
@@ -363,7 +365,9 @@ class TypingValidation(InstanceValidation):
                     return True
                 else:
                     if self._typing_field_error is not None:
-                        self._field_errors.append(self._typing_field_error)
+                        self._field_errors__vdc.append(
+                            self._typing_field_error
+                        )
                         self._typing_field_error = None
                     return False
 

@@ -149,13 +149,13 @@ def test_init_field_validation():
     # Проверим свойства необходимые для начала валидации поля:
 
     # ... список ошибок должен быть пустой
-    assert instance._field_errors == []
+    assert instance._field_errors__vdc == []
     # ... должно быть сохранено имя поля
-    assert instance._field_name == input_name
+    assert instance._field_name__vdc == input_name
     # ... должно быть сохранено значение поля
-    assert instance._field_value == input_value
+    assert instance._field_value__vdc == input_value
     # ... должна быть сохранена аннотация поля
-    assert instance._field_annotation == type(input_value)
+    assert instance._field_annotation__vdc == type(input_value)
 
 
 def test_is_instance_true():
@@ -202,7 +202,7 @@ def test_is_instance_false():
     data = {type(value): value for value in values}
 
     # Подготовим гарантированно пустой список для ошибок
-    instance._field_errors = []
+    instance._field_errors__vdc = []
 
     for type_, value in data.items():
         value = 1 if value == '2' else '2'  # Обеспечим невалидность
@@ -211,7 +211,7 @@ def test_is_instance_false():
 
     # Ошибки были при проверке каждой items из data,
     # таким образом - длины списков должны быть равны
-    assert len(instance._field_errors) == len(values)
+    assert len(instance._field_errors__vdc) == len(values)
 
 
 def test_is_instance_false_and_set_exception():
@@ -227,7 +227,7 @@ def test_is_instance_false_and_set_exception():
     instance = Foo(**correct_input)
 
     # Подготовим гарантированно пустой список для ошибок
-    instance._field_errors = []
+    instance._field_errors__vdc = []
 
     # Вызовем метод с аргументами, которые поднимут исключение
     result = instance._is_instance(1, 1)
@@ -235,7 +235,7 @@ def test_is_instance_false_and_set_exception():
     assert not result
 
     # а в instance._field_errors[0].exception должен быть экземпляр исключения
-    assert isinstance(instance._field_errors[0].exception, Exception)
+    assert isinstance(instance._field_errors__vdc[0].exception, Exception)
 
 
 def test_save_current_field_errors():
@@ -249,8 +249,8 @@ def test_save_current_field_errors():
     assert instance._errors__vdc == {}
 
     # Допустим, сейчас проверяли поле i, и его список ошибок не пуст
-    instance._field_name = 'i'
-    instance._field_errors = ['Просто строка для непустого списка', ]
+    instance._field_name__vdc = 'i'
+    instance._field_errors__vdc = ['Просто строка для непустого списка', ]
 
     # Вызовем метод сохранения ошибки текущего поля
     instance._save_current_field_errors()
@@ -258,8 +258,8 @@ def test_save_current_field_errors():
     # Словарь ошибок должен иметь ключ с именем поля и
     # значением равным списку ошибок
     assert instance._errors__vdc[
-        instance._field_name
-    ] == instance._field_errors
+        instance._field_name__vdc
+    ] == instance._field_errors__vdc
 
 
 def test_run_validation_call_init_validation():
