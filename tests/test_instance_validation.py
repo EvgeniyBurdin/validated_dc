@@ -95,13 +95,13 @@ def test_init_validation():
     instance = Foo(i=1)
 
     # Для теста, изменим значение поля на любое, отличное от True
-    instance._replace = False
+    instance._is_replace__vdc = False
 
     # Вызовем метод
     instance._init_validation()
 
     # Значение у _replace должно вновь стать True
-    assert instance._replace
+    assert instance._is_replace__vdc
 
 
 def test_init_field_validation():
@@ -145,7 +145,7 @@ def test_try_replacing_successfully():
     # Для наглядности, присвоим полю self._replace значение True
     # (это значение по умолчанию, но именно оно необходимо для возможности
     # произвести замену)
-    instance._replace = True  # Выполнять замену, если есть на что
+    instance._is_replace__vdc = True  # Выполнять замену, если есть на что
 
     # В поле self._replacement должен быть подготовленный экземпляр, который
     # был получен из словаря
@@ -173,7 +173,7 @@ def test_try_replacing_unsuccessfully():
     instance.foo = data
 
     # 1. Присвоим полю self._replace значение False
-    instance._replace = False  # Не выполнять замену
+    instance._is_replace__vdc = False  # Не выполнять замену
 
     # В поле self._replacement должен быть подготовленный экземпляр, который
     # был получен из словаря
@@ -186,7 +186,7 @@ def test_try_replacing_unsuccessfully():
     assert instance.foo == data
 
     # 2. Присвоим полю self._replace значение True
-    instance._replace = True  # Выполнять замену, если есть на что
+    instance._is_replace__vdc = True  # Выполнять замену, если есть на что
 
     # Но в поле self._replacement поставим None (значение, которое оно
     # получает после инициализации перед валидацией поля)

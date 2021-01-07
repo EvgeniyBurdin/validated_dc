@@ -234,7 +234,7 @@ class InstanceValidation(BasicValidation):
         # Выполнять ли замену словаря на экземпляр класса-потомка
         # InstanceValidation из аннотации поля (в случае пригодности
         # словаря для создания такого экземпляра), или Нет.
-        self._replace = True
+        self._is_replace__vdc = True
 
         self._replaced_field_names = []
 
@@ -285,7 +285,7 @@ class InstanceValidation(BasicValidation):
         """
         # Если включен флаг замены и есть чем заменять, то установим
         # новое значение у поля
-        if self._replace and self._replacement is not None:
+        if self._is_replace__vdc and self._replacement is not None:
             setattr(self, self._field_name__vdc, self._replacement)
             self._replaced_field_names.append(self._field_name__vdc)
 
