@@ -4,7 +4,7 @@
 import copy
 from dataclasses import dataclass, fields
 
-from validated_dc import BasicValidation, get_value_repr
+from validated_dc import BasicValidation, get_errors, get_value_repr, is_valid
 
 
 class СustomСlass:
@@ -46,6 +46,9 @@ def test_basic_validation_valid():
     assert instance.get_errors() is None
     assert instance.is_valid()
 
+    assert get_errors(instance) is None
+    assert is_valid(instance)
+
 
 def test_basic_validation_not_valid():
     """
@@ -58,10 +61,10 @@ def test_basic_validation_not_valid():
     instance = Foo(**nocorrect_input)
 
     # В полях датакласса есть ошибки
-    assert instance.get_errors()
-    assert not instance.is_valid()
+    assert get_errors(instance)
+    assert not is_valid(instance)
 
-    fields_errors = set([key for key in instance.get_errors().keys()])
+    fields_errors = set([key for key in get_errors(instance).keys()])
     # Данные в полях s и cc имеют ошибки
     assert fields_errors == set(['s', 'cc'])
 
@@ -90,14 +93,14 @@ def test_get_errors():
        ошибок у полей.
     """
     instance = Foo(**correct_input)
-    assert instance.get_errors() is None
+    assert get_errors(instance) is None
 
     nocorrect_input = copy.copy(correct_input)
     nocorrect_input['s'] = 2
     nocorrect_input['cc'] = 5
     instance = Foo(**nocorrect_input)
-    #  Список ошибок хранится в приватном поле instance._errors
-    assert instance._errors == instance.get_errors()
+    #  Список ошибок хранится в приватном поле instance._errors__vdc
+    assert instance._errors__vdc == get_errors(instance)
 
 
 def test_is_valid():
@@ -107,10 +110,10 @@ def test_is_valid():
     """
 
     instance = Foo(**correct_input)
-    assert instance.is_valid()
+    assert is_valid(instance)
 
     instance.s = 5  # Присвоим полю невалидное значение
-    assert not instance.is_valid()
+    assert not is_valid(instance)
 
 
 def test_init_validation():
@@ -121,10 +124,10 @@ def test_init_validation():
     # Возьмем произвольный экземпляр
     instance = Foo(**correct_input)
 
-    instance._errors == {1: 1}  # Присвоим любое непустое значение
+    instance._errors__vdc == {1: 1}  # Присвоим любое непустое значение
 
     instance._init_validation()
-    assert instance._errors == {}
+    assert instance._errors__vdc == {}
 
 
 def test_init_field_validation():
@@ -243,7 +246,7 @@ def test_save_current_field_errors():
     instance = Foo(**correct_input)
 
     # Его словарь ошибок должен быть пустой
-    assert instance._errors == {}
+    assert instance._errors__vdc == {}
 
     # Допустим, сейчас проверяли поле i, и его список ошибок не пуст
     instance._field_name = 'i'
@@ -254,7 +257,9 @@ def test_save_current_field_errors():
 
     # Словарь ошибок должен иметь ключ с именем поля и
     # значением равным списку ошибок
-    assert instance._errors[instance._field_name] == instance._field_errors
+    assert instance._errors__vdc[
+        instance._field_name
+    ] == instance._field_errors
 
 
 def test_run_validation_call_init_validation():
@@ -319,7 +324,7 @@ def test_run_validation_call_save_current_field_errors():
     instance = Foo(**correct_input)
 
     # Его словарь ошибок должен быть пустой
-    assert instance._errors == {}
+    assert instance._errors__vdc == {}
 
     # Изменим значение одного из полей на невалидное
     instance.i = 's'
@@ -328,7 +333,7 @@ def test_run_validation_call_save_current_field_errors():
     instance._run_validation()
 
     # В словаре ошибок должен появиться ключ с именем этого поля
-    assert instance._errors['i']
+    assert instance._errors__vdc['i']
 
 
 def test_get_value_repr():

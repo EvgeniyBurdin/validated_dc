@@ -11,8 +11,8 @@ Dataclass with data validation. Checks the value of its fields by their annotati
 1. Support for standard types and custom Python classes.
 2. Support for some aliases from the `typing` module, namely: `Any`, `List`, `Literal`, `Optional`, `Union`. These aliases can be embedded in each other.
 3. When initializing an instance of a class, you can use the value of the field `dict` instead of the `ValidatedDC` instance specified in the field annotation (useful, for example, when retrieving data via api).
-4. Data validation occurs immediately after an instance is created, and can also be run by the `is_valid()` method at any time.
-5. The `get_errors()` method will show the full traceback of errors in the fields, including errors of nested classes.
+4. Data validation occurs immediately after an instance is created, and can also be run by the `is_valid()` function at any time.
+5. The `get_errors()` function will show the full traceback of errors in the fields, including errors of nested classes.
 
 See detailed in the `examples` folder.
 
@@ -38,7 +38,7 @@ pip install typing_extensions
 from dataclasses import dataclass
 from typing import List, Union
 
-from validated_dc import ValidatedDC
+from validated_dc import ValidatedDC, get_errors, is_valid
 
 
 # Some combinations of List and Union
@@ -57,22 +57,22 @@ class Bar(ValidatedDC):
 
 foo = {'value': 1}
 instance = Bar(foo=foo)
-assert instance.get_errors() is None
+assert get_errors(instance) is None
 assert instance == Bar(foo=Foo(value=1))
 
 foo = {'value': [1, 2]}
 instance = Bar(foo=foo)
-assert instance.get_errors() is None
+assert get_errors(instance) is None
 assert instance == Bar(foo=Foo(value=[1, 2]))
 
 foo = [{'value': 1}, {'value': 2}]
 instance = Bar(foo=foo)
-assert instance.get_errors() is None
+assert get_errors(instance) is None
 assert instance == Bar(foo=[Foo(value=1), Foo(value=2)])
 
 foo = [{'value': [1, 2]}, {'value': [3, 4]}]
 instance = Bar(foo=foo)
-assert instance.get_errors() is None
+assert get_errors(instance) is None
 assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
 
 
@@ -80,22 +80,22 @@ assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
 
 foo = {'value': 'S'}
 instance = Bar(foo=foo)
-assert instance.get_errors()
+assert get_errors(instance)
 assert instance == Bar(foo={'value': 'S'})
 # fix
 instance.foo['value'] = 1
-assert instance.is_valid()
-assert instance.get_errors() is None
+assert is_valid(instance)
+assert get_errors(instance) is None
 assert instance == Bar(foo=Foo(value=1))
 
 foo = [{'value': [1, 2]}, {'value': ['S', 4]}]
 instance = Bar(foo=foo)
-assert instance.get_errors()
+assert get_errors(instance)
 assert instance == Bar(foo=[{'value': [1, 2]}, {'value': ['S', 4]}])
 # fix
 instance.foo[1]['value'][0] = 3
-assert instance.is_valid()
-assert instance.get_errors() is None
+assert is_valid(instance)
+assert get_errors(instance) is None
 assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
 
 
@@ -103,7 +103,7 @@ assert instance == Bar(foo=[Foo(value=[1, 2]), Foo(value=[3, 4])])
 
 foo = {'value': 'S'}
 instance = Bar(foo=foo)
-print(instance.get_errors())
+print(get_errors(instance))
 # {
 #   'foo': [
 #       # An unsuccessful attempt to use the dictionary to create a Foo instance

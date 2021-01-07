@@ -36,14 +36,19 @@
         классы созданные пользователем.
 """
 import copy
+import logging
 from dataclasses import Field as DataclassesField
 from dataclasses import asdict, dataclass
 from dataclasses import fields as dataclasses_fields
-from typing import Any, Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union, Sequence
+
 try:
     from typing import Literal
 except Exception:  # pragma: no cover
     from typing_extensions import Literal
+
+
+logger = logging.getLogger()
 
 
 @dataclass
@@ -78,12 +83,6 @@ class BasicValidation:
 
         Для аннотаций полей можно использовать стандартные типы Python и
         классы созданные пользователем.
-
-        Публичные методы:
-
-        get_errors(self) - Отдает словарь ошибок или None если их нет.
-        is_valid(self)   - Запускает валидацию датакласса.
-                           Отдает True если датакласс валиден и False если нет.
     """
     def __post_init__(self) -> None:
         """
@@ -99,8 +98,15 @@ class BasicValidation:
             Можно использовать сразу после создания экземпляра для определения
             его валидности, а так же после вызова метода is_valid(self).
         """
+        logger.warning(
+            "DEPRECATED: Instance method 'instance.get_errors()' is deprecated. "
+            "Support for this method will end in version 2.0. "
+            "Use a separate function "
+            "'from validated_dc import get_errors', "
+            "and 'get_errors(instance)'."
+        )
 
-        return self._errors if self._errors else None
+        return self._errors__vdc if self._errors__vdc else None
 
     def is_valid(self) -> bool:
         """
@@ -108,15 +114,23 @@ class BasicValidation:
 
             Можно использовать в любой момент жизни экземпляра.
         """
+        logger.warning(
+            "DEPRECATED: Instance method 'instance.is_valid()' is deprecated. "
+            "Support for this method will end in version 2.0. "
+            "Use a separate function "
+            "'from validated_dc import is_valid', "
+            "and 'is_valid(instance)'."
+        )
+
         self._run_validation()
 
-        return not bool(self._errors)
+        return not bool(self._errors__vdc)
 
     def _init_validation(self) -> None:
         """
             Инициализация валидации
         """
-        self._errors = {}
+        self._errors__vdc = {}
 
     def _is_instance(self, value: Any, annotation: type) -> bool:
         """
@@ -160,7 +174,7 @@ class BasicValidation:
             Записывает ошибки текущего поля в self._errors
             (в ошибки всего экземпляра)
         """
-        self._errors[self._field_name] = self._field_errors
+        self._errors__vdc[self._field_name] = self._field_errors
 
     def _run_validation(self) -> None:
         """
@@ -171,6 +185,23 @@ class BasicValidation:
         for field in dataclasses_fields(self):
             if not self._is_field_valid(field):
                 self._save_current_field_errors()
+
+
+def get_errors(instance: BasicValidation) -> Optional[Sequence]:
+    """
+        Отдает словарь ошибок или None если их нет.
+    """
+    return instance._errors__vdc if instance._errors__vdc else None
+
+
+def is_valid(instance: BasicValidation) -> bool:
+    """
+        Запускает валидацию датакласса.
+        Отдает True если датакласс валиден и False если нет.
+    """
+    instance._run_validation()
+
+    return not bool(instance._errors__vdc)
 
 
 # ----------------------------------------------------------------------------
@@ -221,7 +252,7 @@ class InstanceValidation(BasicValidation):
 
                 try:
                     instance = annotation(**value)
-                    errors = instance._errors if instance._errors \
+                    errors = instance._errors__vdc if instance._errors__vdc \
                         else None
                 except Exception as exc:
                     exception = exc

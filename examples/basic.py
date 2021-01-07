@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from validated_dc import ValidatedDC
+
+from validated_dc import ValidatedDC, get_errors, is_valid
 
 
 def any_function_1():
@@ -38,18 +39,18 @@ input_data = {
     'instance_field': AnyClass(),
 }
 instance = MyData(**input_data)
-assert instance.get_errors() is None
+assert get_errors(instance) is None
 
 # --- Errorr input ---
 
 input_data['int_field'] = '1'     # Error - str is not int
 input_data['function_field'] = 2  # Error - int is not function
 instance = MyData(**input_data)
-assert instance.get_errors()
-print(instance.get_errors())
+assert get_errors(instance)
+print(get_errors(instance))
 
 # fix
 instance.int_field = 1
 instance.function_field = any_function_2
-assert instance.is_valid()
-assert instance.get_errors() is None
+assert is_valid(instance)
+assert get_errors(instance) is None
