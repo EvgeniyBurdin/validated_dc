@@ -260,7 +260,7 @@ class InstanceValidation(BasicValidation):
                     exception = exc
 
                 if errors is None and exception is None:
-                    self._replacement = instance
+                    self._replacement__vdc = instance
                     return True
 
                 self._field_errors__vdc.append(InstanceValidationError(
@@ -276,17 +276,17 @@ class InstanceValidation(BasicValidation):
         super()._init_field_validation(field)
 
         # Свойство предназначенное для замены словаря
-        self._replacement = None
+        self._replacement__vdc = None
 
     def _try_replacing(self) -> None:
         """
             Пытается заменить значение у текущего поля на текущее значение
-            свойства self._replacement.
+            свойства self._replacement__vdc.
         """
         # Если включен флаг замены и есть чем заменять, то установим
         # новое значение у поля
-        if self._is_replace__vdc and self._replacement is not None:
-            setattr(self, self._field_name__vdc, self._replacement)
+        if self._is_replace__vdc and self._replacement__vdc is not None:
+            setattr(self, self._field_name__vdc, self._replacement__vdc)
             self._replaced_field_names.append(self._field_name__vdc)
 
     def _is_field_valid(self, field: DataclassesField) -> bool:
@@ -445,9 +445,9 @@ class TypingValidation(InstanceValidation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)
-                    if self._replacement:
-                        item_value = self._replacement
-                        self._replacement = False
+                    if self._replacement__vdc:
+                        item_value = self._replacement__vdc
+                        self._replacement__vdc = False
                     new_value.append(item_value)
                 else:
                     self._typing_field_error = ListValidationError(
@@ -457,7 +457,7 @@ class TypingValidation(InstanceValidation):
                     return False
 
             # Все элементы списка value валидные.
-            self._replacement = new_value
+            self._replacement__vdc = new_value
             return True
 
         self._typing_field_error = BasicValidationError(

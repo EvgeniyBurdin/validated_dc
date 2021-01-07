@@ -109,14 +109,14 @@ def test_init_field_validation():
         Тест инициализации свойст для валидации поля.
     """
     # Для валидации поля экземпляра класса InstanceValidation, дополнительно к
-    # свойствам родителя, свойство self._replacement инициализируется
+    # свойствам родителя, свойство self._replacement__vdc инициализируется
     # значением None.
 
     # Создадим произвольный экземпляр потомка InstanceValidation
     instance = Foo(i=1)
 
     # Для теста, изменим значение поля на любое, отличное от None
-    instance._replacement = 'data'
+    instance._replacement__vdc = 'data'
 
     # Для вызова метода нужен экземпляр поля датакласса
     field = fields(instance)[0]
@@ -125,7 +125,7 @@ def test_init_field_validation():
     instance._init_field_validation(field)
 
     # Значение у _replacement должно вновь стать None
-    assert instance._replacement is None
+    assert instance._replacement__vdc is None
 
 
 def test_try_replacing_successfully():
@@ -147,15 +147,15 @@ def test_try_replacing_successfully():
     # произвести замену)
     instance._is_replace__vdc = True  # Выполнять замену, если есть на что
 
-    # В поле self._replacement должен быть подготовленный экземпляр, который
-    # был получен из словаря
-    instance._replacement = Foo(**data)
+    # В поле self._replacement__vdc должен быть подготовленный экземпляр,
+    # который был получен из словаря
+    instance._replacement__vdc = Foo(**data)
 
     # Вызовем метод
     instance._try_replacing()
 
     # Должна произойти замена значения поля
-    assert instance.foo == instance._replacement
+    assert instance.foo == instance._replacement__vdc
 
 
 def test_try_replacing_unsuccessfully():
@@ -175,9 +175,9 @@ def test_try_replacing_unsuccessfully():
     # 1. Присвоим полю self._replace значение False
     instance._is_replace__vdc = False  # Не выполнять замену
 
-    # В поле self._replacement должен быть подготовленный экземпляр, который
-    # был получен из словаря
-    instance._replacement = Foo(**data)  # Претендент на замену
+    # В поле self._replacement__vdc должен быть подготовленный экземпляр,
+    # который был получен из словаря
+    instance._replacement__vdc = Foo(**data)  # Претендент на замену
 
     # Вызовем метод
     instance._try_replacing()
@@ -188,9 +188,9 @@ def test_try_replacing_unsuccessfully():
     # 2. Присвоим полю self._replace значение True
     instance._is_replace__vdc = True  # Выполнять замену, если есть на что
 
-    # Но в поле self._replacement поставим None (значение, которое оно
+    # Но в поле self._replacement__vdc поставим None (значение, которое оно
     # получает после инициализации перед валидацией поля)
-    instance._replacement = None  # Нет значения для замены
+    instance._replacement__vdc = None  # Нет значения для замены
 
     # Вызовем метод
     instance._try_replacing()
