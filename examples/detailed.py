@@ -1,4 +1,4 @@
-from validated_dc import ValidatedDC
+from validated_dc import ValidatedDC, get_errors, is_valid
 from dataclasses import dataclass
 
 from typing import List, Union, Optional
@@ -59,7 +59,7 @@ person = {
     'address': {'city': 'Samara'}
 }
 workers = Workers(person=person)
-assert workers.get_errors() is None
+assert get_errors(workers) is None
 
 # --- Valid input ---
 
@@ -82,7 +82,7 @@ person = [
     }
 ]
 workers = Workers(person=person)
-assert workers.get_errors() is None
+assert get_errors(workers) is None
 
 # --- Errorr input ---
 
@@ -97,13 +97,13 @@ person = {
 }
 
 workers = Workers(person=person)
-assert workers.get_errors()
+assert get_errors(workers)
 
 # person - is still a dictionary
 # Fix it: change the values to valid
 workers.person['name'] = 'Ivan'
 workers.person['contact'][0]['phone'] = '+7-999-000-00-00'
-assert workers.is_valid()
+assert is_valid(workers)
 assert workers.person.name  # person - is now an instance Person
 
 # --- Errorr input ---
@@ -119,4 +119,4 @@ person = {
 }
 
 workers = Workers(person=person)
-assert workers.get_errors()
+assert get_errors(workers)
