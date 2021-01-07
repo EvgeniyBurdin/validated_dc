@@ -161,9 +161,9 @@ class BasicValidation:
         self._field_value__vdc = getattr(self, field.name)
         self._field_annotation__vdc = field.type
 
-    def _is_field_valid(self, field: DataclassesField) -> bool:
+    def _is_field_valid__vdc(self, field: DataclassesField) -> bool:
         """
-            Запускает проверку поля
+            Запускает проверку поля, и возвращает результат валидации.
         """
         self._init_field_validation(field)
 
@@ -185,7 +185,7 @@ class BasicValidation:
         self._init_validation()
 
         for field in dataclasses_fields(self):
-            if not self._is_field_valid(field):
+            if not self._is_field_valid__vdc(field):
                 self._save_current_field_errors()
 
 
@@ -289,9 +289,9 @@ class InstanceValidation(BasicValidation):
             setattr(self, self._field_name__vdc, self._replacement__vdc)
             self._replaced_field_names.append(self._field_name__vdc)
 
-    def _is_field_valid(self, field: DataclassesField) -> bool:
+    def _is_field_valid__vdc(self, field: DataclassesField) -> bool:
 
-        result = super()._is_field_valid(field)
+        result = super()._is_field_valid__vdc(field)
 
         if result:
             # Попробуем произвести замену

@@ -296,7 +296,7 @@ def test_run_validation_call_is_field_valid():
         def __post_init__(self):
             self._field___names = []  # Создадим поле для проверки
 
-        def _is_field_valid(self, field):
+        def _is_field_valid__vdc(self, field):
             """
                 Фейковый метод валидации поля, просто сохраняет имя каждого
                 полученного поля.

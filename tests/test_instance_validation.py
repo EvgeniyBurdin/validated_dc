@@ -201,7 +201,7 @@ def test_try_replacing_unsuccessfully():
 
 def test_is_field_valid():
     """
-        Тест метода self._is_field_valid().
+        Тест метода self._is_field_valid__vdc().
     """
     # После вызова метода родительского класса и если он вернул True, метод
     # в классе InstanceValidation должен вызвать метод self._try_replacing().
@@ -219,11 +219,11 @@ def test_is_field_valid():
     # Установим в False маркер вызова
     instance._try_replacing__called = False
 
-    # Для вызова _is_field_valid() нужено экземпляр поля, получим его
+    # Для вызова _is_field_valid__vdc() нужен экземпляр поля, получим его
     field = fields(instance)[0]
 
     # Вызовем метод
-    instance._is_field_valid(field)
+    instance._is_field_valid__vdc(field)
 
     # Метод _try_replacing() должен быть вызван
     assert instance._try_replacing__called
