@@ -37,13 +37,13 @@ def test_is_instance_true():
     # должна вернуть True:
 
     value = {'foo': {'i': 1}}
-    assert instance._is_instance(value, annotation)
+    assert instance._is_instance__vdc(value, annotation)
 
     value = Bar(foo={'i': 1})
-    assert instance._is_instance(value, annotation)
+    assert instance._is_instance__vdc(value, annotation)
 
     value = Bar(foo=Foo(i=1))
-    assert instance._is_instance(value, annotation)
+    assert instance._is_instance__vdc(value, annotation)
 
 
 def test_is_instance_false():
@@ -66,19 +66,19 @@ def test_is_instance_false():
     # должна вернуть False:
 
     value = {'foo': {'i': '1'}}    # Неверный тип значение у вложенного поля i
-    assert not instance._is_instance(value, annotation)
+    assert not instance._is_instance__vdc(value, annotation)
 
     value = {'foo': {'i_x': 1}}    # Отсутствующее имя i_x в классе Foo
-    assert not instance._is_instance(value, annotation)
+    assert not instance._is_instance__vdc(value, annotation)
 
     value = Bar(foo={'i': [1, ]})  # Неверный тип значение у вложенного поля i
-    assert not instance._is_instance(value, annotation)
+    assert not instance._is_instance__vdc(value, annotation)
 
     value = Bar(foo=1)             # Неверный тип значение у поля foo
-    assert not instance._is_instance(value, annotation)
+    assert not instance._is_instance__vdc(value, annotation)
 
     value = {'foo_x': {'i': 1}}  # Отсутствующее имя foo_x в классе Bar
-    assert not instance._is_instance(value, annotation)
+    assert not instance._is_instance__vdc(value, annotation)
 
     # ... и т.п.
 

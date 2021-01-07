@@ -132,7 +132,7 @@ class BasicValidation:
         """
         self._errors__vdc = {}
 
-    def _is_instance(self, value: Any, annotation: type) -> bool:
+    def _is_instance__vdc(self, value: Any, annotation: type) -> bool:
         """
             Проверка значения на соответствие типу.
         """
@@ -167,7 +167,7 @@ class BasicValidation:
         """
         self._init_field_validation(field)
 
-        return self._is_instance(
+        return self._is_instance__vdc(
             self._field_value__vdc, self._field_annotation__vdc
         )
 
@@ -238,7 +238,7 @@ class InstanceValidation(BasicValidation):
 
         self._replaced_field_names = []
 
-    def _is_instance(self, value: Any, annotation: type) -> bool:
+    def _is_instance__vdc(self, value: Any, annotation: type) -> bool:
 
         is_type = type(annotation) == type
         if is_type and issubclass(annotation, InstanceValidation):
@@ -269,7 +269,7 @@ class InstanceValidation(BasicValidation):
                 ))
                 return False
 
-        return super()._is_instance(value, annotation)
+        return super()._is_instance__vdc(value, annotation)
 
     def _init_field_validation(self, field: DataclassesField) -> None:
 
@@ -341,7 +341,7 @@ class TypingValidation(InstanceValidation):
 
         Поддерживаемые алиасы перечислены в константе STR_ALIASES.
     """
-    def _is_instance(self, value: Any, annotation: type) -> bool:
+    def _is_instance__vdc(self, value: Any, annotation: type) -> bool:
 
         str_annotation = str(annotation)
 
@@ -371,7 +371,7 @@ class TypingValidation(InstanceValidation):
                         self._typing_field_error = None
                     return False
 
-        return super()._is_instance(value, annotation)
+        return super()._is_instance__vdc(value, annotation)
 
     @staticmethod
     def _is_typing_alias(annotation: str) -> bool:
@@ -419,7 +419,7 @@ class TypingValidation(InstanceValidation):
         """
         # У Union допустимые типы перечислены в кортеже __args__
         for item_annotation in annotation.__args__:
-            if self._is_instance(value, item_annotation):
+            if self._is_instance__vdc(value, item_annotation):
                 return True
         # Нет ни одного типа, подходящего для value
         return False
@@ -441,7 +441,7 @@ class TypingValidation(InstanceValidation):
             # У List допустимый тип стоит первым в кортеже __args__
             annotation = annotation.__args__[0]
             for i, item_value in enumerate(value):
-                if self._is_instance(item_value, annotation):
+                if self._is_instance__vdc(item_value, annotation):
                     # Собираем новый список для текущего поля
                     # (так как в нем возможна замена элемента-словаря на
                     # элемент-экземпляр потомка родительского класса)

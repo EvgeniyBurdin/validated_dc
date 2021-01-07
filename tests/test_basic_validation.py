@@ -179,7 +179,7 @@ def test_is_instance_true():
 
     for type_, value in data.items():
         # Все проверки должны вернуть True
-        assert instance._is_instance(value, type_)
+        assert instance._is_instance__vdc(value, type_)
 
 
 def test_is_instance_false():
@@ -207,7 +207,7 @@ def test_is_instance_false():
     for type_, value in data.items():
         value = 1 if value == '2' else '2'  # Обеспечим невалидность
         # Все проверки должны вернуть False
-        assert not instance._is_instance(value, type_)
+        assert not instance._is_instance__vdc(value, type_)
 
     # Ошибки были при проверке каждой items из data,
     # таким образом - длины списков должны быть равны
@@ -230,7 +230,7 @@ def test_is_instance_false_and_set_exception():
     instance._field_errors__vdc = []
 
     # Вызовем метод с аргументами, которые поднимут исключение
-    result = instance._is_instance(1, 1)
+    result = instance._is_instance__vdc(1, 1)
     # Но метод его должен "погасить" и вернуть False
     assert not result
 
